@@ -26,7 +26,9 @@ const app = express();
 const isProduction = process.env.NODE_ENV === "production";
 const isTest = process.env.NODE_ENV === "test";
 
-// security headers
+// security headers using helmet
+// in production, we need a stricter content security policy (CSP)
+// but in dev, we disable it to allow inline scripts/styles from tools
 app.use(
   helmet({
     contentSecurityPolicy: isProduction ? undefined : false,
@@ -34,15 +36,17 @@ app.use(
   })
 );
 
-// rate limiting — stricter on auth to prevent brute force
+// rate limiting — stricter on auth to prevent brute force attacks
+// generic limit: 1000 requests per 15 min for dev, 100 for prod (per IP)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: isProduction ? 100 : 1000,
-  standardHeaders: true,
-  legacyHeaders: false,
+  standardHeaders: true, // return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // disable the `X-RateLimit-*` headers
   message: { status: "fail", message: "Too many requests, please try again later" },
 });
 
+// auth limit: restrict login attempts to prevent password guessing
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: isProduction ? 10 : 100,
@@ -52,6 +56,9 @@ const authLimiter = rateLimit({
 app.use("/api/", limiter);
 app.use("/api/auth/", authLimiter);
 
+// cors configuration
+// in production, we'll want to restrict origin, but for now we allow all
+// credentials: true is required for passing cookies/headers if we ever switch to cookie-based auth
 app.use(
   cors({
     origin: isProduction ? false : true,
@@ -61,11 +68,12 @@ app.use(
   })
 );
 
+// limit body size to 10kb to prevent DoS attacks via large payloads
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use(compression());
 
-// request logging (skip in tests / skip health checks)
+// request logging (skip in tests / skip health checks to keep logs clean)
 if (!isTest) {
   app.use(
     morgan(isProduction ? "combined" : "dev", {
@@ -74,7 +82,7 @@ if (!isTest) {
   );
 }
 
-// health check
+// simple health check endpoint for load balancers or uptime monitors
 app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
@@ -90,17 +98,20 @@ app.use("/api/products", productRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/orders", orderRoutes);
 
-// serve built frontend in production
+// serve built frontend static files in production
+// this allows us to run the entire stack on a single port (5001)
 if (isProduction) {
   const distPath = path.resolve(__dirname, "..", "dist");
   app.use(express.static(distPath));
 
+  // any route not handled by the api should be passed to the react app
+  // this enables client-side routing (SPA)
   app.get("/*path", (req, res) => {
     res.sendFile(path.join(distPath, "index.html"));
   });
 }
 
-// 404 catch-all
+// 404 catch-all for undefined api routes
 app.use((req, res, next) => {
   next(new AppError(`Cannot find ${req.originalUrl} on this server`, 404));
 });
@@ -122,7 +133,8 @@ const startServer = async () => {
       logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV || "development"}]`);
     });
 
-    // graceful shutdown on SIGTERM/SIGINT
+    // graceful shutdown handles SIGTERM (docker stop) and SIGINT (ctrl+c)
+    // we close the server first to stop accepting new requests, then close the db connection
     const shutdown = (signal) => {
       logger.info(`${signal} received. Shutting down gracefully...`);
       server.close(async () => {

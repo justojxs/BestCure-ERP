@@ -1,5 +1,7 @@
 const API_URL = '/api';
 
+// helper to get auth headers from local storage
+// dynamically adds the Authorization header if a token exists
 const getHeaders = () => {
   try {
     const user = JSON.parse(localStorage.getItem('bestcure_user'));
@@ -8,11 +10,13 @@ const getHeaders = () => {
       ...(user?.token && { Authorization: `Bearer ${user.token}` }),
     };
   } catch {
+    // fallback if local storage is corrupted
     return { 'Content-Type': 'application/json' };
   }
 };
 
 // generic fetch wrapper — parses error messages from the API response
+// standardizes error handling so components don't have to deal with raw fetch responses
 const request = async (url, options = {}) => {
   const res = await fetch(url, {
     ...options,
@@ -22,9 +26,12 @@ const request = async (url, options = {}) => {
   if (!res.ok) {
     let errorMessage = `Request failed (${res.status})`;
     try {
+      // attempt to extract the specific error message sent by the backend
       const data = await res.json();
       errorMessage = data.message || data.errors?.map(e => e.message).join(', ') || errorMessage;
-    } catch { /* use default message */ }
+    } catch { /* use default message if json parsing fails */ }
+
+    // throwing here allows useApi hook to catch it
     throw new Error(errorMessage);
   }
 

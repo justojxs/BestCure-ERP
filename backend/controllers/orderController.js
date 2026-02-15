@@ -6,6 +6,9 @@ import asyncHandler from "../utils/asyncHandler.js";
 import logger from "../utils/logger.js";
 
 // generates order number like ORD-202602-0001 (auto-increments per month)
+// note: in a high-concurrency environment, this check-then-increment approach
+// could have race conditions. for this scale, it's acceptable, but for higher scale
+// we would move to a dedicated counter collection with atomic $inc updates.
 const generateOrderNumber = async () => {
     const date = new Date();
     const prefix = `ORD-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}`;
@@ -25,6 +28,7 @@ const generateOrderNumber = async () => {
 
 // POST /api/orders — customer places an order
 // uses a mongo transaction so stock deduction is atomic
+// if any part fails (e.g. invalid product, insufficient stock), everything rolls back
 const createOrder = asyncHandler(async (req, res) => {
     const { items } = req.body;
 
@@ -32,6 +36,7 @@ const createOrder = asyncHandler(async (req, res) => {
         throw new AppError("Order must contain at least one item", 400);
     }
 
+    // start session for transaction
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -39,12 +44,14 @@ const createOrder = asyncHandler(async (req, res) => {
         const orderItems = [];
 
         for (const item of items) {
+            // pass session to queries to include them in the transaction
             const product = await Product.findById(item.product).session(session);
 
             if (!product) {
                 throw new AppError(`Product not found: ${item.product}`, 404);
             }
 
+            // initial check before we try to lock anything
             if (product.stock < item.quantity) {
                 throw new AppError(
                     `Insufficient stock for "${product.name}". Available: ${product.stock}, Requested: ${item.quantity}`,
@@ -62,10 +69,11 @@ const createOrder = asyncHandler(async (req, res) => {
         }
 
         const subtotal = orderItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
-        const tax = Math.round(subtotal * 0.18 * 100) / 100; // 18% GST
+        const tax = Math.round(subtotal * 0.18 * 100) / 100; // 18% GST hardcoded for now
         const total = Math.round((subtotal + tax) * 100) / 100;
         const orderNumber = await generateOrderNumber();
 
+        // create order inside the transaction
         const [order] = await Order.create(
             [
                 {
@@ -83,6 +91,8 @@ const createOrder = asyncHandler(async (req, res) => {
         );
 
         // deduct stock — the $gte guard prevents going negative even under concurrency
+        // this is critical: findOneAndUpdate is atomic, so even if two requests pass the
+        // initial stock check above, only one will succeed here if stock is low.
         for (const item of orderItems) {
             const result = await Product.findOneAndUpdate(
                 { _id: item.product, stock: { $gte: item.quantity } },
@@ -101,6 +111,7 @@ const createOrder = asyncHandler(async (req, res) => {
 
         res.status(201).json(order);
     } catch (error) {
+        // if anything failed, abort transaction to undo all changes (including stock deduction)
         await session.abortTransaction();
         throw error;
     } finally {
@@ -114,6 +125,7 @@ const getOrders = asyncHandler(async (req, res) => {
 
     const filter = {};
 
+    // security: force filter for customers
     if (req.user.role === "customer") {
         filter.customer = req.user._id;
     }
@@ -124,6 +136,7 @@ const getOrders = asyncHandler(async (req, res) => {
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
+    // run query and count in parallel for pagination
     const [orders, total] = await Promise.all([
         Order.find(filter)
             .populate("customer", "name email")
@@ -189,7 +202,8 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
             throw new AppError("Order has already been processed", 400);
         }
 
-        // rejecting an order restores the reserved stock
+        // blocking check: if rejecting, we must put the stock back
+        // this also needs to be part of the transaction
         if (status === "rejected") {
             for (const item of order.items) {
                 await Product.findByIdAndUpdate(
@@ -207,6 +221,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 
         await session.commitTransaction();
 
+        // return the updated doc with populated fields for the UI
         const updated = await Order.findById(order._id)
             .populate("customer", "name email")
             .populate("acceptedBy", "name");
