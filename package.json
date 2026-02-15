@@ -1,0 +1,63 @@
+{
+  "name": "bestcure-erp",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Production-grade veterinary medicine distribution ERP system built with MERN stack",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "vite",
+    "dev:server": "cross-env NODE_ENV=development nodemon backend/server.js",
+    "start": "cross-env NODE_ENV=production node backend/server.js",
+    "build": "vite build",
+    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/.bin/jest --detectOpenHandles --forceExit",
+    "test:watch": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/.bin/jest --watch --detectOpenHandles",
+    "test:coverage": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/.bin/jest --coverage --detectOpenHandles --forceExit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"frontend/**/*.{js,jsx,css}\" \"backend/**/*.js\"",
+    "format:check": "prettier --check \"frontend/**/*.{js,jsx,css}\" \"backend/**/*.js\"",
+    "seed": "node backend/seed.js",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.0",
+    "concurrently": "^9.1.2",
+    "cors": "^2.8.6",
+    "cross-env": "^7.0.3",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^0.564.0",
+    "mongodb": "^7.1.0",
+    "mongoose": "^9.2.1",
+    "morgan": "^1.10.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.0",
+    "recharts": "^3.7.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@jest/globals": "^29.7.0",
+    "@types/node": "^22.19.11",
+    "@vitejs/plugin-react": "^5.0.0",
+    "eslint": "^9.39.2",
+    "globals": "^15.15.0",
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^10.4.0",
+    "nodemon": "^3.1.11",
+    "prettier": "^3.8.1",
+    "supertest": "^7.1.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
