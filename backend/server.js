@@ -159,7 +159,7 @@ const startServer = async () => {
 };
 
 // tests import `app` directly, so only start the server when running normally
-if (!isTest) {
+if (!isTest && !process.env.VERCEL) {
   startServer();
 }
 
