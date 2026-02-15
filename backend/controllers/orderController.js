@@ -5,25 +5,37 @@ import AppError from "../utils/AppError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import logger from "../utils/logger.js";
 
-// generates order number like ORD-202602-0001 (auto-increments per month)
-// note: in a high-concurrency environment, this check-then-increment approach
-// could have race conditions. for this scale, it's acceptable, but for higher scale
-// we would move to a dedicated counter collection with atomic $inc updates.
+// generates order number like BC/25-26/0001 (Financial Year based)
 const generateOrderNumber = async () => {
     const date = new Date();
-    const prefix = `ORD-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}`;
+    const month = date.getMonth(); // 0-11
+    const year = date.getFullYear();
+
+    // Calculate Financial Year (April 1 to March 31)
+    let fyStart = year;
+    let fyEnd = year + 1;
+    if (month < 3) { // Jan, Feb, Mar
+        fyStart = year - 1;
+        fyEnd = year;
+    }
+
+    const fyString = `${String(fyStart).slice(-2)}-${String(fyEnd).slice(-2)}`;
+    const prefix = `BC/${fyString}/`;
 
     const lastOrder = await Order.findOne({
-        orderNumber: { $regex: `^${prefix}` },
-    }).sort({ orderNumber: -1 });
+        orderNumber: { $regex: `^BC\/${fyString}\/` },
+    }).sort({ createdAt: -1 });
 
     let nextNum = 1;
     if (lastOrder) {
-        const lastNum = parseInt(lastOrder.orderNumber.split("-").pop(), 10);
-        nextNum = lastNum + 1;
+        const parts = lastOrder.orderNumber.split('/');
+        const lastNum = parseInt(parts[parts.length - 1], 10);
+        if (!isNaN(lastNum)) {
+            nextNum = lastNum + 1;
+        }
     }
 
-    return `${prefix}-${String(nextNum).padStart(4, "0")}`;
+    return `${prefix}${String(nextNum).padStart(4, "0")}`;
 };
 
 // POST /api/orders — customer places an order
