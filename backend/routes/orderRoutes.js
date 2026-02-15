@@ -14,7 +14,7 @@ const router = express.Router();
 router
     .route("/")
     .get(protect, getOrders)
-    .post(protect, authorize("customer"), createOrderRules, validate, createOrder);
+    .post(protect, authorize("customer", "admin", "staff"), createOrderRules, validate, createOrder);
 
 router.route("/:id").get(protect, getOrderById);
 
