@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import generateToken from "../utils/generateToken.js";
 import User from "../models/User.js";
 import AppError from "../utils/AppError.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -13,9 +13,7 @@ const login = asyncHandler(async (req, res) => {
     throw new AppError("Invalid email or password", 401);
   }
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
+  const token = generateToken(user._id);
 
   res.json({
     id: user._id,
