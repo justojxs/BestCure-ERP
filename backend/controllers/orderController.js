@@ -91,6 +91,11 @@ const createOrder = asyncHandler(async (req, res) => {
             customerName = req.body.customerName;
         }
 
+        // Determine initial status based on role
+        const isStaffOrAdmin = req.user.role === 'admin' || req.user.role === 'staff';
+        const initialStatus = isStaffOrAdmin ? 'accepted' : 'pending';
+        const acceptedBy = isStaffOrAdmin ? req.user._id : undefined;
+
         // create order inside the transaction
         const [order] = await Order.create(
             [
@@ -102,7 +107,8 @@ const createOrder = asyncHandler(async (req, res) => {
                     subtotal: Math.round(subtotal * 100) / 100,
                     tax,
                     total,
-                    status: "pending",
+                    status: initialStatus,
+                    acceptedBy,
                 },
             ],
             { session }
