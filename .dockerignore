@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+.env
+.env.local
+.git
+.gitignore
+.DS_Store
+*.log
+*.md
+.vscode
+.idea
+.prettierrc
+eslint.config.js
+jest.config.js
