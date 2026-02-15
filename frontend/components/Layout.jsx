@@ -139,8 +139,7 @@ export default function Layout() {
 
         {/* Page content */}
         <main
-          style={{ flex: 1, overflowY: 'auto', padding: '0 var(--space-8) var(--space-8)' }}
-          className="no-scrollbar"
+          className="main-content no-scrollbar"
         >
           <Outlet />
         </main>

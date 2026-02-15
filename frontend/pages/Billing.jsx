@@ -120,10 +120,10 @@ export default function Billing() {
 
   return (
     <>
-      <div className="animate-fadeIn no-print-container" style={{ height: 'calc(100vh - 100px)', display: 'flex', gap: '32px' }}>
+      <div className="animate-fadeIn no-print-container billing-layout">
 
         {/* ── LEFT: Product Catalog ── */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <div className="billing-catalog">
 
           {/* Header & Search */}
           <div style={{ marginBottom: '24px' }}>
@@ -227,7 +227,7 @@ export default function Billing() {
         </div>
 
         {/* ── RIGHT: Invoice Panel ── */}
-        <div className="card" style={{ width: '400px', display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%', border: 'none', boxShadow: 'var(--shadow-xl)' }}>
+        <div className="card billing-invoice-panel">
 
           {/* Invoice Header */}
           <div style={{ padding: '24px', background: orderSuccess ? 'var(--color-success)' : 'var(--color-slate-900)', color: 'white', transition: 'background 0.3s ease' }}>
