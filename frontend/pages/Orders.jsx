@@ -1,31 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import {
-    ClipboardList, CheckCircle, XCircle, Clock, Eye, ChevronDown,
-    Package, AlertCircle, ArrowLeft, FileText, User, Calendar
+    ClipboardList, CheckCircle, XCircle, Clock, Eye,
+    Package, ArrowLeft, FileText, User, Calendar, Search, Filter
 } from 'lucide-react';
-
-const StatusBadge = ({ status, size = 'md' }) => {
-    const config = {
-        pending: { bg: 'rgba(245,158,11,0.08)', color: '#d97706', border: 'rgba(245,158,11,0.2)', icon: Clock, label: 'Pending' },
-        accepted: { bg: 'rgba(5,150,105,0.08)', color: '#059669', border: 'rgba(5,150,105,0.2)', icon: CheckCircle, label: 'Accepted' },
-        rejected: { bg: 'rgba(239,68,68,0.08)', color: '#ef4444', border: 'rgba(239,68,68,0.2)', icon: XCircle, label: 'Rejected' },
-    };
-    const c = config[status] || config.pending;
-    const Icon = c.icon;
-    const padding = size === 'lg' ? '7px 16px' : '5px 12px';
-    const fontSize = size === 'lg' ? '13px' : '12px';
-    return (
-        <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: '5px',
-            padding, borderRadius: '8px', fontSize, fontWeight: '600',
-            background: c.bg, color: c.color, border: `1px solid ${c.border}`,
-        }}>
-            <Icon size={size === 'lg' ? 15 : 13} />
-            {c.label}
-        </span>
-    );
-};
 
 export default function Orders() {
     const [orders, setOrders] = useState([]);
@@ -34,6 +12,7 @@ export default function Orders() {
     const [viewingOrder, setViewingOrder] = useState(null);
     const [processing, setProcessing] = useState(null);
     const [statusNote, setStatusNote] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         loadOrders();
@@ -64,7 +43,12 @@ export default function Orders() {
         }
     };
 
-    const filteredOrders = orders.filter(o => filter === 'all' || o.status === filter);
+    const filteredOrders = orders.filter(o => {
+        const matchesFilter = filter === 'all' || o.status === filter;
+        const matchesSearch = o.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            o.orderNumber.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesFilter && matchesSearch;
+    });
 
     const stats = {
         total: orders.length,
@@ -73,177 +57,126 @@ export default function Orders() {
         rejected: orders.filter(o => o.status === 'rejected').length,
     };
 
-    // ─── Order Detail ───
+    const getStatusBadgeClass = (status) => {
+        switch (status) {
+            case 'accepted': return 'badge badge-success';
+            case 'rejected': return 'badge badge-danger';
+            default: return 'badge badge-warning';
+        }
+    };
+
+    // ─── Order Detail View ───
     if (viewingOrder) {
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <button onClick={() => setViewingOrder(null)} style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '8px',
-                    background: 'none', border: 'none', color: '#64748b',
-                    fontSize: '14px', fontWeight: '500', cursor: 'pointer', padding: 0,
-                }}>
+            <div className="animate-fadeIn">
+                <button onClick={() => setViewingOrder(null)} className="btn btn-ghost" style={{ marginBottom: '16px', paddingLeft: 0 }}>
                     <ArrowLeft size={18} /> Back to Orders
                 </button>
 
-                <div style={{
-                    background: '#ffffff', borderRadius: '16px',
-                    border: '1px solid rgba(226,232,240,0.6)', overflow: 'hidden',
-                }}>
+                <div className="card">
                     {/* Header */}
-                    <div style={{
-                        padding: '28px 32px',
-                        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-                        color: 'white',
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div className="card-header" style={{ background: 'var(--color-slate-50)', padding: '32px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
                             <div>
-                                <div style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: '6px',
-                                    padding: '4px 12px', background: 'rgba(255,255,255,0.08)',
-                                    borderRadius: '8px', fontSize: '12px', fontWeight: '600',
-                                    marginBottom: '12px', color: 'rgba(226,232,240,0.7)',
-                                }}>
-                                    <FileText size={13} />
+                                <span className="badge badge-info" style={{ marginBottom: '12px' }}>
                                     {viewingOrder.orderNumber}
-                                </div>
-                                <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>Order Details</h2>
-                                <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: 'rgba(148,163,184,0.7)' }}>
+                                </span>
+                                <h2 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>Order Details</h2>
+                                <div style={{ display: 'flex', gap: '24px', fontSize: '14px', color: 'var(--color-slate-500)' }}>
                                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <User size={14} /> {viewingOrder.customerName}
+                                        <User size={16} /> {viewingOrder.customerName}
                                     </span>
                                     <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <Calendar size={14} />
+                                        <Calendar size={16} />
                                         {new Date(viewingOrder.createdAt).toLocaleDateString('en-IN', {
-                                            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+                                            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
                                         })}
                                     </span>
                                 </div>
                             </div>
-                            <StatusBadge status={viewingOrder.status} size="lg" />
+                            <span className={getStatusBadgeClass(viewingOrder.status)} style={{ fontSize: '14px', padding: '6px 16px' }}>
+                                <span className="badge-dot"></span>
+                                {viewingOrder.status}
+                            </span>
                         </div>
                     </div>
 
-                    {/* Items */}
-                    <div style={{ padding: '24px 32px' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                    {['Item', 'Batch', 'Qty', 'Price', 'Total'].map(h => (
-                                        <th key={h} style={{
-                                            padding: '12px 0', fontSize: '11px', fontWeight: '600',
-                                            color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.8px',
-                                            textAlign: ['Price', 'Total', 'Qty'].includes(h) ? 'right' : 'left',
-                                        }}>{h}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {viewingOrder.items.map((item, i) => (
-                                    <tr key={i} style={{ borderBottom: '1px solid #f8fafc' }}>
-                                        <td style={{ padding: '14px 0', fontWeight: '600', fontSize: '14px', color: '#0f172a' }}>{item.name}</td>
-                                        <td style={{ padding: '14px 0', fontSize: '12px', color: '#94a3b8', fontFamily: "'SF Mono', monospace" }}>{item.batch}</td>
-                                        <td style={{ padding: '14px 0', textAlign: 'right', fontSize: '14px', color: '#475569' }}>{item.quantity}</td>
-                                        <td style={{ padding: '14px 0', textAlign: 'right', fontSize: '14px', color: '#475569' }}>₹{item.price.toFixed(2)}</td>
-                                        <td style={{ padding: '14px 0', textAlign: 'right', fontSize: '14px', fontWeight: '600', color: '#0f172a' }}>₹{(item.price * item.quantity).toFixed(2)}</td>
+                    {/* Items Table */}
+                    <div className="card-body" style={{ padding: '32px' }}>
+                        <div className="table-container">
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Batch</th>
+                                        <th style={{ textAlign: 'right' }}>Qty</th>
+                                        <th style={{ textAlign: 'right' }}>Price</th>
+                                        <th style={{ textAlign: 'right' }}>Total</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {viewingOrder.items.map((item, i) => (
+                                        <tr key={i}>
+                                            <td style={{ fontWeight: '600' }}>{item.name}</td>
+                                            <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-slate-500)' }}>{item.batch}</td>
+                                            <td style={{ textAlign: 'right' }}>{item.quantity}</td>
+                                            <td style={{ textAlign: 'right' }}>₹{item.price.toFixed(2)}</td>
+                                            <td style={{ textAlign: 'right', fontWeight: '600' }}>₹{(item.price * item.quantity).toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
 
-                        {/* Totals */}
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                            <div style={{ width: '260px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '13px' }}>
-                                    <span style={{ color: '#64748b' }}>Subtotal</span>
-                                    <span style={{ color: '#475569', fontWeight: '500' }}>₹{viewingOrder.subtotal.toFixed(2)}</span>
+                        {/* Financials */}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '32px' }}>
+                            <div style={{ width: '300px', background: 'var(--surface-bg)', padding: '24px', borderRadius: 'var(--radius-lg)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
+                                    <span style={{ color: 'var(--color-slate-500)' }}>Subtotal</span>
+                                    <span style={{ fontWeight: '600' }}>₹{viewingOrder.subtotal.toFixed(2)}</span>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: '13px' }}>
-                                    <span style={{ color: '#64748b' }}>GST (18%)</span>
-                                    <span style={{ color: '#475569', fontWeight: '500' }}>₹{viewingOrder.tax.toFixed(2)}</span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '14px' }}>
+                                    <span style={{ color: 'var(--color-slate-500)' }}>GST (18%)</span>
+                                    <span style={{ fontWeight: '600' }}>₹{viewingOrder.tax.toFixed(2)}</span>
                                 </div>
-                                <div style={{
-                                    display: 'flex', justifyContent: 'space-between',
-                                    paddingTop: '14px', marginTop: '8px', borderTop: '2px solid #0f172a',
-                                }}>
-                                    <span style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a' }}>Total</span>
-                                    <span style={{
-                                        fontSize: '20px', fontWeight: '700',
-                                        background: 'linear-gradient(135deg, #059669, #0d9488)',
-                                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-                                    }}>₹{viewingOrder.total.toFixed(2)}</span>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '16px', borderTop: '2px solid var(--color-slate-200)' }}>
+                                    <span style={{ fontSize: '18px', fontWeight: '800' }}>Total</span>
+                                    <span style={{ fontSize: '20px', fontWeight: '800', color: 'var(--color-primary)' }}>₹{viewingOrder.total.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Actions - only for pending */}
+                    {/* Action Footer */}
                     {viewingOrder.status === 'pending' && (
-                        <div style={{
-                            padding: '24px 32px', background: '#f8fafc',
-                            borderTop: '1px solid #f1f5f9',
-                        }}>
-                            <h3 style={{ fontSize: '14px', fontWeight: '600', color: '#0f172a', marginBottom: '12px' }}>
-                                Process Order
-                            </h3>
-                            <div style={{ marginBottom: '16px' }}>
+                        <div className="card-footer" style={{ padding: '24px 32px', borderTop: '1px solid var(--surface-border)', background: 'var(--color-slate-50)' }}>
+                            <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: 'var(--color-slate-600)' }}>Process Order</h3>
+                            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                                 <input
                                     type="text"
                                     placeholder="Add a note (optional)..."
                                     value={statusNote}
                                     onChange={(e) => setStatusNote(e.target.value)}
-                                    style={{
-                                        width: '100%', padding: '10px 14px',
-                                        background: '#ffffff', border: '1px solid rgba(226,232,240,0.8)',
-                                        borderRadius: '10px', fontSize: '13px', color: '#0f172a',
-                                        outline: 'none',
-                                    }}
+                                    className="form-input"
+                                    style={{ flex: 1 }}
                                 />
-                            </div>
-                            <div style={{ display: 'flex', gap: '12px' }}>
                                 <button
                                     onClick={() => handleStatusUpdate(viewingOrder._id, 'accepted')}
-                                    disabled={processing === viewingOrder._id + 'accepted'}
-                                    style={{
-                                        flex: 1, padding: '12px', borderRadius: '12px', border: 'none',
-                                        background: 'linear-gradient(135deg, #059669 0%, #0d9488 100%)',
-                                        color: '#ffffff', fontSize: '14px', fontWeight: '600',
-                                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                        boxShadow: '0 4px 12px rgba(5,150,105,0.25)',
-                                        transition: 'all 0.25s ease',
-                                    }}
+                                    disabled={processing}
+                                    className="btn btn-success"
                                 >
-                                    <CheckCircle size={17} />
+                                    <CheckCircle size={18} />
                                     {processing === viewingOrder._id + 'accepted' ? 'Accepting...' : 'Accept Order'}
                                 </button>
                                 <button
                                     onClick={() => handleStatusUpdate(viewingOrder._id, 'rejected')}
-                                    disabled={processing === viewingOrder._id + 'rejected'}
-                                    style={{
-                                        flex: 1, padding: '12px', borderRadius: '12px',
-                                        border: '1px solid rgba(239,68,68,0.3)',
-                                        background: 'rgba(239,68,68,0.06)', color: '#ef4444',
-                                        fontSize: '14px', fontWeight: '600', cursor: 'pointer',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                        transition: 'all 0.25s ease',
-                                    }}
+                                    disabled={processing}
+                                    className="btn btn-danger"
                                 >
-                                    <XCircle size={17} />
+                                    <XCircle size={18} />
                                     {processing === viewingOrder._id + 'rejected' ? 'Rejecting...' : 'Reject Order'}
                                 </button>
                             </div>
-                        </div>
-                    )}
-
-                    {/* Processed info */}
-                    {viewingOrder.status !== 'pending' && viewingOrder.acceptedBy && (
-                        <div style={{
-                            padding: '16px 32px', background: '#f8fafc',
-                            borderTop: '1px solid #f1f5f9', fontSize: '13px', color: '#64748b',
-                        }}>
-                            Processed by <strong style={{ color: '#0f172a' }}>{viewingOrder.acceptedBy.name || 'Staff'}</strong>
-                            {viewingOrder.statusNote && (
-                                <span> — "{viewingOrder.statusNote}"</span>
-                            )}
                         </div>
                     )}
                 </div>
@@ -251,197 +184,171 @@ export default function Orders() {
         );
     }
 
-    // ─── Loading ───
+    // ─── Loading State ───
     if (loading) return (
-        <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            height: '60vh', gap: '12px',
-        }}>
-            <div style={{
-                width: '32px', height: '32px',
-                border: '3px solid rgba(5,150,105,0.15)', borderTopColor: '#059669',
-                borderRadius: '50%', animation: 'spin-slow 0.8s linear infinite',
-            }} />
-            <span style={{ color: '#64748b', fontSize: '14px', fontWeight: '500' }}>Loading orders...</span>
+        <div className="loading-container">
+            <div className="spinner"></div>
+            <p className="loading-text">Loading orders...</p>
         </div>
     );
 
+    // ─── Main List View ───
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-
-            {/* Header */}
-            <div>
-                <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#0f172a', letterSpacing: '-0.5px' }}>
-                    Order Management
-                </h1>
-                <p style={{ fontSize: '14px', color: '#94a3b8', marginTop: '4px' }}>
-                    Review and process customer orders
-                </p>
-            </div>
-
-            {/* Stats */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: '14px',
-            }}>
-                {[
-                    { label: 'Total Orders', value: stats.total, color: '#3b82f6', bg: 'rgba(59,130,246,0.06)' },
-                    { label: 'Pending', value: stats.pending, color: '#f59e0b', bg: 'rgba(245,158,11,0.06)' },
-                    { label: 'Accepted', value: stats.accepted, color: '#059669', bg: 'rgba(5,150,105,0.06)' },
-                    { label: 'Rejected', value: stats.rejected, color: '#ef4444', bg: 'rgba(239,68,68,0.06)' },
-                ].map(stat => (
-                    <div key={stat.label} style={{
-                        background: '#ffffff', padding: '20px',
-                        borderRadius: '14px', border: '1px solid rgba(226,232,240,0.6)',
-                    }}>
-                        <p style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '500', marginBottom: '6px' }}>{stat.label}</p>
-                        <p style={{ fontSize: '28px', fontWeight: '700', color: stat.color }}>{stat.value}</p>
+        <div className="animate-fadeIn">
+            {/* Page Header */}
+            <div className="page-header">
+                <div>
+                    <h1 className="page-title">Order Management</h1>
+                    <p className="page-subtitle">Track and manage customer orders</p>
+                </div>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-slate-400)' }} />
+                        <input
+                            type="text"
+                            placeholder="Search orders..."
+                            className="form-input"
+                            style={{ paddingLeft: '40px', width: '250px' }}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
-                ))}
+                </div>
             </div>
 
-            {/* Filter tabs */}
-            <div style={{ display: 'flex', gap: '6px', background: '#f1f5f9', borderRadius: '12px', padding: '4px', width: 'fit-content' }}>
+            {/* Stats Overview */}
+            <div className="grid-4" style={{ marginBottom: '32px' }}>
+                <div className="stat-card">
+                    <div className="stat-card-header">
+                        <div className="stat-card-icon" style={{ background: 'var(--color-info-bg)', color: 'var(--color-info)' }}>
+                            <ClipboardList size={24} />
+                        </div>
+                        <span className="stat-card-trend up">Live</span>
+                    </div>
+                    <div>
+                        <p className="stat-card-label">Total Orders</p>
+                        <p className="stat-card-value">{stats.total}</p>
+                    </div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-card-header">
+                        <div className="stat-card-icon" style={{ background: 'var(--color-warning-bg)', color: 'var(--color-warning)' }}>
+                            <Clock size={24} />
+                        </div>
+                        {stats.pending > 0 && <span className="stat-card-trend down">Action Needed</span>}
+                    </div>
+                    <div>
+                        <p className="stat-card-label">Pending</p>
+                        <p className="stat-card-value">{stats.pending}</p>
+                    </div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-card-header">
+                        <div className="stat-card-icon" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)' }}>
+                            <CheckCircle size={24} />
+                        </div>
+                    </div>
+                    <div>
+                        <p className="stat-card-label">Accepted</p>
+                        <p className="stat-card-value">{stats.accepted}</p>
+                    </div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-card-header">
+                        <div className="stat-card-icon" style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)' }}>
+                            <XCircle size={24} />
+                        </div>
+                    </div>
+                    <div>
+                        <p className="stat-card-label">Rejected</p>
+                        <p className="stat-card-value">{stats.rejected}</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Filter Tabs */}
+            <div style={{ marginBottom: '24px', display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                 {[
-                    { key: 'all', label: 'All' },
-                    { key: 'pending', label: `Pending (${stats.pending})` },
+                    { key: 'all', label: 'All Orders' },
+                    { key: 'pending', label: 'Pending' },
                     { key: 'accepted', label: 'Accepted' },
                     { key: 'rejected', label: 'Rejected' },
                 ].map(f => (
-                    <button key={f.key} onClick={() => setFilter(f.key)} style={{
-                        padding: '8px 18px', borderRadius: '10px', border: 'none',
-                        fontSize: '13px', fontWeight: '600', cursor: 'pointer',
-                        background: filter === f.key ? '#ffffff' : 'transparent',
-                        color: filter === f.key ? '#0f172a' : '#64748b',
-                        boxShadow: filter === f.key ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
-                        transition: 'all 0.2s ease',
-                    }}>
+                    <button
+                        key={f.key}
+                        onClick={() => setFilter(f.key)}
+                        className={`btn btn-sm ${filter === f.key ? 'btn-primary' : 'btn-secondary'}`}
+                        style={{ borderRadius: '20px' }}
+                    >
                         {f.label}
                     </button>
                 ))}
             </div>
 
-            {/* Orders list */}
-            <div style={{
-                background: '#ffffff', borderRadius: '16px',
-                border: '1px solid rgba(226,232,240,0.6)', overflow: 'hidden',
-            }}>
-                {filteredOrders.length === 0 ? (
-                    <div style={{ padding: '60px', textAlign: 'center' }}>
-                        <ClipboardList size={48} style={{ color: '#e2e8f0', margin: '0 auto 16px', display: 'block' }} />
-                        <p style={{ color: '#64748b', fontSize: '15px', fontWeight: '500' }}>No orders found</p>
-                        <p style={{ color: '#94a3b8', fontSize: '13px', marginTop: '4px' }}>
-                            {filter !== 'all' ? 'Try changing the filter.' : 'Orders will appear when customers place them.'}
-                        </p>
-                    </div>
-                ) : (
-                    <div>
-                        {/* Table header */}
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: '1.5fr 1.2fr 0.8fr 1fr 0.8fr 1fr',
-                            padding: '14px 24px',
-                            background: '#f8fafc',
-                            borderBottom: '1px solid #f1f5f9',
-                        }}>
-                            {['Order', 'Customer', 'Items', 'Total', 'Status', 'Actions'].map(h => (
-                                <span key={h} style={{
-                                    fontSize: '11px', fontWeight: '600', color: '#94a3b8',
-                                    textTransform: 'uppercase', letterSpacing: '0.8px',
-                                }}>{h}</span>
-                            ))}
-                        </div>
-
-                        {filteredOrders.map(order => (
-                            <div key={order._id} style={{
-                                display: 'grid',
-                                gridTemplateColumns: '1.5fr 1.2fr 0.8fr 1fr 0.8fr 1fr',
-                                padding: '18px 24px',
-                                borderBottom: '1px solid #f8fafc',
-                                alignItems: 'center',
-                                transition: 'background 0.15s ease',
-                            }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = '#fafbfd'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                            >
-                                {/* Order number */}
-                                <div>
-                                    <span style={{
-                                        fontSize: '13px', fontWeight: '700', color: '#0f172a',
-                                        fontFamily: "'SF Mono', monospace",
-                                    }}>
-                                        {order.orderNumber}
-                                    </span>
-                                    <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-                                        {new Date(order.createdAt).toLocaleDateString('en-IN', {
-                                            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-                                        })}
-                                    </p>
-                                </div>
-
-                                {/* Customer */}
-                                <span style={{ fontSize: '13px', color: '#475569', fontWeight: '500' }}>
-                                    {order.customerName}
-                                </span>
-
-                                {/* Items count */}
-                                <span style={{ fontSize: '13px', color: '#64748b' }}>
-                                    {order.items.length} item{order.items.length > 1 ? 's' : ''}
-                                </span>
-
-                                {/* Total */}
-                                <span style={{ fontSize: '14px', fontWeight: '700', color: '#0f172a' }}>
-                                    ₹{order.total.toFixed(2)}
-                                </span>
-
-                                {/* Status */}
-                                <StatusBadge status={order.status} />
-
-                                {/* Actions */}
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                    <button onClick={() => setViewingOrder(order)} style={{
-                                        display: 'flex', alignItems: 'center', gap: '4px',
-                                        padding: '6px 12px', borderRadius: '8px',
-                                        border: '1px solid rgba(226,232,240,0.8)',
-                                        background: '#ffffff', fontSize: '12px', fontWeight: '500',
-                                        color: '#475569', cursor: 'pointer',
-                                    }}>
-                                        <Eye size={13} /> View
-                                    </button>
-                                    {order.status === 'pending' && (
-                                        <>
-                                            <button
-                                                onClick={() => handleStatusUpdate(order._id, 'accepted')}
-                                                disabled={processing === order._id + 'accepted'}
-                                                style={{
-                                                    display: 'flex', alignItems: 'center',
-                                                    padding: '6px 10px', borderRadius: '8px', border: 'none',
-                                                    background: 'rgba(5,150,105,0.08)', color: '#059669',
-                                                    fontSize: '12px', fontWeight: '600', cursor: 'pointer',
-                                                }}
-                                            >
-                                                <CheckCircle size={14} />
+            {/* Orders Data Grid */}
+            <div className="card">
+                <div className="table-container">
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th style={{ textAlign: 'right' }}>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredOrders.length === 0 ? (
+                                <tr>
+                                    <td colSpan="7" className="empty-state">
+                                        <div className="empty-state-icon">
+                                            <ClipboardList size={48} />
+                                        </div>
+                                        <h3 className="empty-state-title">No orders found</h3>
+                                        <p className="empty-state-desc">Try adjusting your search or filters.</p>
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredOrders.map(order => (
+                                    <tr key={order._id} style={{ cursor: 'pointer' }} onClick={() => setViewingOrder(order)}>
+                                        <td style={{ fontFamily: 'var(--font-mono)', fontWeight: '600' }}>
+                                            {order.orderNumber}
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--color-slate-200)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <User size={14} color="var(--color-slate-500)" />
+                                                </div>
+                                                <span style={{ fontWeight: '500' }}>{order.customerName}</span>
+                                            </div>
+                                        </td>
+                                        <td style={{ fontSize: '13px', color: 'var(--color-slate-500)' }}>
+                                            {new Date(order.createdAt).toLocaleDateString('en-IN', {
+                                                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                            })}
+                                        </td>
+                                        <td>{order.items.length} items</td>
+                                        <td style={{ fontWeight: '700' }}>₹{order.total.toFixed(2)}</td>
+                                        <td>
+                                            <span className={getStatusBadgeClass(order.status)}>
+                                                <span className="badge-dot"></span>
+                                                {order.status}
+                                            </span>
+                                        </td>
+                                        <td style={{ textAlign: 'right' }}>
+                                            <button className="btn btn-ghost btn-sm">
+                                                <Eye size={16} />
                                             </button>
-                                            <button
-                                                onClick={() => handleStatusUpdate(order._id, 'rejected')}
-                                                disabled={processing === order._id + 'rejected'}
-                                                style={{
-                                                    display: 'flex', alignItems: 'center',
-                                                    padding: '6px 10px', borderRadius: '8px', border: 'none',
-                                                    background: 'rgba(239,68,68,0.06)', color: '#ef4444',
-                                                    fontSize: '12px', fontWeight: '600', cursor: 'pointer',
-                                                }}
-                                            >
-                                                <XCircle size={14} />
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
