@@ -1,31 +1,33 @@
 import js from '@eslint/js';
 import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
-export default [
+export default tseslint.config(
     js.configs.recommended,
-
-    { ignores: ['dist/**', 'node_modules/**', 'coverage/**'] },
-
+    ...tseslint.configs.recommended,
+    {
+        ignores: ['dist/**', 'node_modules/**', 'coverage/**']
+    },
     // backend (node)
     {
-        files: ['backend/**/*.js'],
+        files: ['backend/**/*.ts'],
         languageOptions: {
             ecmaVersion: 2024,
             sourceType: 'module',
             globals: { ...globals.node },
         },
         rules: {
-            'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+            'no-unused-vars': 'off',
+            '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
             'no-console': 'off',
             'prefer-const': 'error',
             'no-var': 'error',
             eqeqeq: ['error', 'always'],
         },
     },
-
     // frontend (react / browser)
     {
-        files: ['frontend/**/*.{js,jsx}'],
+        files: ['frontend/**/*.{ts,tsx}'],
         languageOptions: {
             ecmaVersion: 2024,
             sourceType: 'module',
@@ -33,24 +35,23 @@ export default [
             globals: { ...globals.browser },
         },
         rules: {
-            'no-unused-vars': 'off', // can't detect JSX usage without react plugin
+            '@typescript-eslint/no-unused-vars': 'off',
             'no-console': ['warn', { allow: ['warn', 'error'] }],
             'prefer-const': 'error',
             'no-var': 'error',
             eqeqeq: ['error', 'always'],
         },
     },
-
     // tests
     {
-        files: ['backend/__tests__/**/*.js'],
+        files: ['backend/__tests__/**/*.ts'],
         languageOptions: {
             ecmaVersion: 2024,
             sourceType: 'module',
             globals: { ...globals.node, ...globals.jest },
         },
         rules: {
-            'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+            '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
         },
     },
-];
+);
