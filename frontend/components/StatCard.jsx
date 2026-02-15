@@ -1,18 +1,5 @@
 import React from 'react';
 
-/**
- * Reusable stat/KPI card component for dashboard metrics.
- *
- * @param {Object} props
- * @param {string} props.title - Metric label (e.g. "TOTAL REVENUE")
- * @param {string|number} props.value - Primary display value
- * @param {string} [props.subtitle] - Secondary text (e.g. "Avg. order: ₹699")
- * @param {React.ReactNode} props.icon - Lucide icon element
- * @param {string} [props.iconBg] - CSS color for icon background
- * @param {string} [props.trend] - Trend text (e.g. "+12.5%")
- * @param {'up'|'down'} [props.trendDirection] - Trend direction for coloring
- * @param {Function} [props.onClick] - Optional click handler
- */
 export default function StatCard({
     title,
     value,

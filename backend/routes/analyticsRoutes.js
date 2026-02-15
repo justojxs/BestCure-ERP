@@ -7,14 +7,8 @@ import asyncHandler from "../utils/asyncHandler.js";
 
 const router = express.Router();
 
-/**
- * @desc    Get comprehensive dashboard analytics
- * @route   GET /api/analytics/dashboard
- * @access  Private (admin)
- *
- * Returns a rich set of KPIs, trends, and breakdowns for the admin dashboard.
- * All aggregations are done server-side for performance.
- */
+// GET /api/analytics/dashboard — admin-only dashboard stats
+// runs all aggregations in parallel for performance
 router.get(
   "/dashboard",
   protect,
@@ -22,7 +16,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const now = new Date();
 
-    // ─── Parallel aggregations for performance ───
+    // run all queries in parallel
     const [
       totalProducts,
       lowStockProducts,

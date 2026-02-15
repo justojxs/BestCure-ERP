@@ -1,10 +1,6 @@
 import { validationResult } from "express-validator";
 
-/**
- * Middleware that checks express-validator results.
- * If validation fails, returns a structured 400 error with field-level details.
- * Must be placed AFTER validation chain rules in the route definition.
- */
+// checks express-validator results and returns field-level errors on failure
 const validate = (req, res, next) => {
     const errors = validationResult(req);
 

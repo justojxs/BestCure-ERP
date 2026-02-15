@@ -1,14 +1,6 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 
-/**
- * Reusable loading spinner component.
- *
- * @param {Object} props
- * @param {string} [props.message] - Loading message
- * @param {'sm'|'md'|'lg'} [props.size] - Spinner size
- * @param {boolean} [props.fullPage] - Whether to center in the full viewport
- */
 export default function LoadingSpinner({
     message = 'Loading...',
     size = 'md',

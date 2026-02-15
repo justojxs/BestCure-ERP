@@ -3,12 +3,8 @@ import User from "../models/User.js";
 import AppError from "../utils/AppError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
-/**
- * Protect routes — verify JWT token and attach user to request.
- * Token is expected in: Authorization: Bearer <token>
- */
+// verifies JWT from Authorization header and attaches user to req
 const protect = asyncHandler(async (req, res, next) => {
-  // Skip preflight requests
   if (req.method === "OPTIONS") return next();
 
   let token;
@@ -32,13 +28,7 @@ const protect = asyncHandler(async (req, res, next) => {
   next();
 });
 
-/**
- * Restrict access to specific roles.
- * Must be used AFTER the protect middleware.
- *
- * @param  {...string} roles - Allowed roles (e.g., "admin", "staff")
- * @returns {Function} Express middleware
- */
+// restricts a route to specific roles — use after protect()
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {

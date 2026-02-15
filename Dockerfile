@@ -1,36 +1,24 @@
-# ──────────────────────────────────────────────
-# Stage 1: Build the frontend (Vite)
-# ──────────────────────────────────────────────
+# Stage 1 — build the frontend
 FROM node:18-alpine AS builder
-
 WORKDIR /app
-
-# Install dependencies first (layer caching)
 COPY package*.json ./
 RUN npm ci
-
-# Copy source and build
 COPY . .
 RUN npm run build
 
-# ──────────────────────────────────────────────
-# Stage 2: Production server
-# ──────────────────────────────────────────────
+# Stage 2 — production server
 FROM node:18-alpine
-
 WORKDIR /app
 
-# Install only production dependencies
 COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
-# Copy backend source + built frontend
 COPY backend ./backend
 COPY --from=builder /app/dist ./dist
 
-# Non-root user for security
+# run as non-root
 RUN addgroup -g 1001 -S appgroup && \
-    adduser -S appuser -u 1001 -G appgroup
+  adduser -S appuser -u 1001 -G appgroup
 USER appuser
 
 EXPOSE 5001

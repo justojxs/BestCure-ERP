@@ -1,15 +1,6 @@
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
 
-/**
- * Reusable empty state component for when there's no data to display.
- *
- * @param {Object} props
- * @param {string} [props.title] - Primary message
- * @param {string} [props.message] - Secondary descriptive text
- * @param {React.ReactNode} [props.icon] - Custom icon (defaults to AlertCircle)
- * @param {React.ReactNode} [props.action] - Optional action button/link
- */
 export default function EmptyState({
     title = 'No data found',
     message = 'There are no items to display at this time.',

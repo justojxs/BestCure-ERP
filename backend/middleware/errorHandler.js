@@ -1,24 +1,20 @@
 import logger from "../utils/logger.js";
 
-/**
- * Centralized error handling middleware.
- * Must be registered AFTER all routes. Express identifies error middleware
- * by the (err, req, res, next) 4-argument signature.
- */
+// centralized error handler — must be registered after all routes
+// express identifies this as an error handler by the 4-arg signature
 const errorHandler = (err, req, res, _next) => {
-    // Defaults
     let statusCode = err.statusCode || 500;
     let message = err.message || "Internal Server Error";
     let status = err.status || "error";
 
-    // Mongoose bad ObjectId
+    // mongoose bad ObjectId
     if (err.name === "CastError" && err.kind === "ObjectId") {
         statusCode = 400;
         message = "Resource not found — invalid ID format";
         status = "fail";
     }
 
-    // Mongoose duplicate key
+    // mongoose duplicate key
     if (err.code === 11000) {
         const field = Object.keys(err.keyValue).join(", ");
         statusCode = 409;
@@ -26,7 +22,7 @@ const errorHandler = (err, req, res, _next) => {
         status = "fail";
     }
 
-    // Mongoose validation error
+    // mongoose validation error
     if (err.name === "ValidationError") {
         const messages = Object.values(err.errors).map((e) => e.message);
         statusCode = 400;
@@ -47,7 +43,6 @@ const errorHandler = (err, req, res, _next) => {
         status = "fail";
     }
 
-    // Log the error
     if (statusCode >= 500) {
         logger.error(`${statusCode} ${message}`, {
             path: req.originalUrl,
@@ -61,7 +56,6 @@ const errorHandler = (err, req, res, _next) => {
         });
     }
 
-    // Send response
     const response = {
         status,
         message,

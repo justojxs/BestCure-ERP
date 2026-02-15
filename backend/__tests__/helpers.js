@@ -5,10 +5,7 @@ import User from '../models/User.js';
 import Product from '../models/Product.js';
 import Order from '../models/Order.js';
 
-/**
- * Connect to the in-memory MongoDB instance.
- * The URI is set by globalSetup.js via process.env.MONGO_URI.
- */
+// connect to the in-memory mongo instance (URI set by globalSetup)
 export const connectDB = async () => {
     const uri = process.env.MONGO_URI;
     if (!uri) throw new Error('MONGO_URI not set — is globalSetup running?');
@@ -16,9 +13,8 @@ export const connectDB = async () => {
     if (mongoose.connection.readyState === 0) {
         await mongoose.connect(uri);
 
-        // Pre-create collections used inside transactions.
-        // MongoDB cannot create collections inside an active transaction,
-        // so they must exist before any transactional operations.
+        // pre-create collections used inside transactions
+        // mongo can't create collections inside an active transaction
         const db = mongoose.connection.db;
         const existing = (await db.listCollections().toArray()).map((c) => c.name);
         for (const name of ['orders', 'products', 'users']) {
@@ -29,9 +25,6 @@ export const connectDB = async () => {
     }
 };
 
-/**
- * Drop all collections between test suites for isolation.
- */
 export const clearDB = async () => {
     const collections = mongoose.connection.collections;
     for (const key in collections) {
@@ -39,16 +32,11 @@ export const clearDB = async () => {
     }
 };
 
-/**
- * Disconnect from MongoDB.
- */
 export const disconnectDB = async () => {
     await mongoose.connection.close();
 };
 
-/**
- * Create a test user and return the user doc + JWT token.
- */
+// creates a user and returns { user, token } for use in tests
 export const createTestUser = async (overrides = {}) => {
     const salt = await bcrypt.genSalt(4); // fast hash for tests
     const defaults = {
@@ -66,9 +54,6 @@ export const createTestUser = async (overrides = {}) => {
     return { user, token };
 };
 
-/**
- * Create a test product.
- */
 export const createTestProduct = async (overrides = {}) => {
     const defaults = {
         name: 'Test Medicine',
@@ -84,9 +69,6 @@ export const createTestProduct = async (overrides = {}) => {
     return Product.create({ ...defaults, ...overrides });
 };
 
-/**
- * Create a test order.
- */
 export const createTestOrder = async (customer, products, overrides = {}) => {
     const items = products.map((p) => ({
         product: p._id,

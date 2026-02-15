@@ -2,90 +2,57 @@ import Product from "../models/Product.js";
 import AppError from "../utils/AppError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
-/**
- * @desc    Get all products with optional filtering
- * @route   GET /api/products?category=Antibiotics&search=amox&lowStock=true
- * @access  Private
- */
+// GET /api/products — supports search, category filter, low stock filter
 const getProducts = asyncHandler(async (req, res) => {
-  const { category, search, lowStock, sortBy = "name", order = "asc" } = req.query;
-
+  const { search, category, lowStock, expiring } = req.query;
   const filter = {};
 
-  if (category) {
-    filter.category = category;
+  if (search) {
+    filter.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { batch: { $regex: search, $options: "i" } },
+      { supplier: { $regex: search, $options: "i" } },
+    ];
   }
 
-  if (search) {
-    filter.name = { $regex: search, $options: "i" };
-  }
+  if (category) filter.category = category;
 
   if (lowStock === "true") {
-    filter.$expr = { $lt: ["$stock", "$minStock"] };
+    filter.$expr = { $lte: ["$stock", "$minStock"] };
   }
 
-  const sortOrder = order === "desc" ? -1 : 1;
-  const sortOptions = { [sortBy]: sortOrder };
+  if (expiring === "true") {
+    const thirtyDays = new Date();
+    thirtyDays.setDate(thirtyDays.getDate() + 30);
+    filter.expiry = { $lte: thirtyDays };
+  }
 
-  const products = await Product.find(filter).sort(sortOptions);
+  const products = await Product.find(filter).sort({ createdAt: -1 });
   res.json(products);
 });
 
-/**
- * @desc    Get single product by ID
- * @route   GET /api/products/:id
- * @access  Private
- */
+// GET /api/products/:id
 const getProductById = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id);
-
-  if (!product) {
-    throw new AppError("Product not found", 404);
-  }
-
+  if (!product) throw new AppError("Product not found", 404);
   res.json(product);
 });
 
-/**
- * @desc    Create a new product
- * @route   POST /api/products
- * @access  Private (admin, staff)
- */
+// POST /api/products
 const createProduct = asyncHandler(async (req, res) => {
-  // Only allow whitelisted fields
-  const { name, batch, supplier, stock, minStock, price, expiry, category } = req.body;
-
-  const product = await Product.create({
-    name,
-    batch,
-    supplier,
-    stock,
-    minStock,
-    price,
-    expiry,
-    category,
-  });
-
+  const product = await Product.create(req.body);
   res.status(201).json(product);
 });
 
-/**
- * @desc    Update a product
- * @route   PUT /api/products/:id
- * @access  Private (admin, staff)
- */
+// PUT /api/products/:id — only updates allowed fields
 const updateProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  const allowed = [
+    "name", "batch", "supplier", "stock", "minStock",
+    "price", "expiry", "category",
+  ];
 
-  if (!product) {
-    throw new AppError("Product not found", 404);
-  }
-
-  // Whitelist allowed updates
-  const allowedFields = ["name", "batch", "supplier", "stock", "minStock", "price", "expiry", "category"];
   const updates = {};
-
-  for (const field of allowedFields) {
+  for (const field of allowed) {
     if (req.body[field] !== undefined) {
       updates[field] = req.body[field];
     }
@@ -97,23 +64,16 @@ const updateProduct = asyncHandler(async (req, res) => {
     { returnDocument: 'after', runValidators: true }
   );
 
+  if (!updatedProduct) throw new AppError("Product not found", 404);
+
   res.json(updatedProduct);
 });
 
-/**
- * @desc    Delete a product
- * @route   DELETE /api/products/:id
- * @access  Private (admin)
- */
+// DELETE /api/products/:id
 const deleteProduct = asyncHandler(async (req, res) => {
-  const product = await Product.findById(req.params.id);
-
-  if (!product) {
-    throw new AppError("Product not found", 404);
-  }
-
-  await product.deleteOne();
-  res.json({ message: "Product removed", id: req.params.id });
+  const product = await Product.findByIdAndDelete(req.params.id);
+  if (!product) throw new AppError("Product not found", 404);
+  res.json({ message: "Product removed" });
 });
 
 export { getProducts, getProductById, createProduct, updateProduct, deleteProduct };

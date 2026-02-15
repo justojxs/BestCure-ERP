@@ -1,14 +1,11 @@
-/**
- * Lightweight structured logger.
- * - Development: colorized, verbose output
- * - Production: JSON format for log aggregation services
- * - Test: silent
- */
+// simple structured logger
+// dev: colorized output, prod: JSON for log aggregation, test: silent
+
 const LOG_LEVELS = { error: 0, warn: 1, info: 2, debug: 3 };
 
 const currentLevel = () => {
     const env = process.env.NODE_ENV || "development";
-    if (env === "test") return -1; // silent
+    if (env === "test") return -1;
     if (env === "production") return LOG_LEVELS.info;
     return LOG_LEVELS.debug;
 };

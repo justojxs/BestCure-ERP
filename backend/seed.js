@@ -8,14 +8,8 @@ import logger from "./utils/logger.js";
 
 dotenv.config();
 
-/**
- * Database seeder — idempotent.
- * Only inserts if collections are empty. Safe to run multiple times.
- *
- * Usage:
- *   node backend/seed.js           → seed only
- *   node backend/seed.js --reset   → drop existing data and re-seed
- */
+// database seeder — idempotent by default (only inserts if collections are empty)
+// run with --reset to wipe and re-seed
 const SEED_PRODUCTS = [
     { name: "Amoxycillin 500mg", batch: "B1001", supplier: "PharmaVet Inc", stock: 1500, minStock: 200, price: 15.5, expiry: new Date("2027-12-01"), category: "Antibiotics" },
     { name: "Ivermectin Injection", batch: "B1002", supplier: "Global Meds", stock: 45, minStock: 50, price: 45.0, expiry: new Date("2027-06-15"), category: "Antiparasitic" },

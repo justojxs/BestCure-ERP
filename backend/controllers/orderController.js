@@ -5,15 +5,11 @@ import AppError from "../utils/AppError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import logger from "../utils/logger.js";
 
-/**
- * Generate unique order number using atomic counter pattern.
- * Uses findOneAndUpdate to atomically increment and avoid race conditions.
- */
+// generates order number like ORD-202602-0001 (auto-increments per month)
 const generateOrderNumber = async () => {
     const date = new Date();
     const prefix = `ORD-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}`;
 
-    // Atomic: find the highest existing order number for this month and increment
     const lastOrder = await Order.findOne({
         orderNumber: { $regex: `^${prefix}` },
     }).sort({ orderNumber: -1 });
@@ -27,15 +23,8 @@ const generateOrderNumber = async () => {
     return `${prefix}-${String(nextNum).padStart(4, "0")}`;
 };
 
-/**
- * @desc    Create a new order (customer submits order)
- * @route   POST /api/orders
- * @access  Private (customer)
- *
- * Uses MongoDB transactions to ensure atomicity:
- * - Stock validation and deduction happen atomically
- * - If any step fails, all changes are rolled back
- */
+// POST /api/orders — customer places an order
+// uses a mongo transaction so stock deduction is atomic
 const createOrder = asyncHandler(async (req, res) => {
     const { items } = req.body;
 
@@ -47,7 +36,6 @@ const createOrder = asyncHandler(async (req, res) => {
     session.startTransaction();
 
     try {
-        // Validate stock and build order items
         const orderItems = [];
 
         for (const item of items) {
@@ -73,13 +61,11 @@ const createOrder = asyncHandler(async (req, res) => {
             });
         }
 
-        // Calculate totals
         const subtotal = orderItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
         const tax = Math.round(subtotal * 0.18 * 100) / 100; // 18% GST
         const total = Math.round((subtotal + tax) * 100) / 100;
         const orderNumber = await generateOrderNumber();
 
-        // Create order within transaction
         const [order] = await Order.create(
             [
                 {
@@ -96,7 +82,7 @@ const createOrder = asyncHandler(async (req, res) => {
             { session }
         );
 
-        // Atomically deduct stock
+        // deduct stock — the $gte guard prevents going negative even under concurrency
         for (const item of orderItems) {
             const result = await Product.findOneAndUpdate(
                 { _id: item.product, stock: { $gte: item.quantity } },
@@ -122,17 +108,12 @@ const createOrder = asyncHandler(async (req, res) => {
     }
 });
 
-/**
- * @desc    Get orders — customers see own, admin/staff see all
- * @route   GET /api/orders?status=pending&page=1&limit=20
- * @access  Private
- */
+// GET /api/orders — customers only see their own, admin/staff see all
 const getOrders = asyncHandler(async (req, res) => {
     const { status, page = 1, limit = 50 } = req.query;
 
     const filter = {};
 
-    // Customers can only see their own orders
     if (req.user.role === "customer") {
         filter.customer = req.user._id;
     }
@@ -164,11 +145,7 @@ const getOrders = asyncHandler(async (req, res) => {
     });
 });
 
-/**
- * @desc    Get single order by ID
- * @route   GET /api/orders/:id
- * @access  Private
- */
+// GET /api/orders/:id
 const getOrderById = asyncHandler(async (req, res) => {
     const order = await Order.findById(req.params.id)
         .populate("customer", "name email")
@@ -178,7 +155,7 @@ const getOrderById = asyncHandler(async (req, res) => {
         throw new AppError("Order not found", 404);
     }
 
-    // Access control: customers can only see their own orders
+    // customers can only view their own orders
     if (
         req.user.role === "customer" &&
         order.customer._id.toString() !== req.user._id.toString()
@@ -189,13 +166,8 @@ const getOrderById = asyncHandler(async (req, res) => {
     res.json(order);
 });
 
-/**
- * @desc    Update order status (accept/reject)
- * @route   PUT /api/orders/:id/status
- * @access  Private (admin, staff)
- *
- * Uses transaction: rejecting an order restores stock atomically.
- */
+// PUT /api/orders/:id/status — accept or reject a pending order
+// rejecting restores stock via transaction
 const updateOrderStatus = asyncHandler(async (req, res) => {
     const { status, statusNote } = req.body;
 
@@ -217,7 +189,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
             throw new AppError("Order has already been processed", 400);
         }
 
-        // If rejecting, restore stock atomically
+        // rejecting an order restores the reserved stock
         if (status === "rejected") {
             for (const item of order.items) {
                 await Product.findByIdAndUpdate(
@@ -235,7 +207,6 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 
         await session.commitTransaction();
 
-        // Fetch the updated order with populated fields
         const updated = await Order.findById(order._id)
             .populate("customer", "name email")
             .populate("acceptedBy", "name");

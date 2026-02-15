@@ -1,9 +1,5 @@
 const API_URL = '/api';
 
-/**
- * Get authorization headers from stored user session.
- * @returns {Record<string, string>} Headers object with Content-Type and optional Authorization
- */
 const getHeaders = () => {
   try {
     const user = JSON.parse(localStorage.getItem('bestcure_user'));
@@ -16,10 +12,7 @@ const getHeaders = () => {
   }
 };
 
-/**
- * Generic fetch wrapper with error handling.
- * Parses error messages from API responses.
- */
+// generic fetch wrapper — parses error messages from the API response
 const request = async (url, options = {}) => {
   const res = await fetch(url, {
     ...options,
@@ -38,12 +31,8 @@ const request = async (url, options = {}) => {
   return res.json();
 };
 
-/**
- * API client — all backend communication goes through this module.
- * Each method returns a Promise that resolves to the parsed JSON response.
- */
 export const api = {
-  // ── Auth ──
+  // auth
   login: (email, password) =>
     request(`${API_URL}/auth/login`, {
       method: 'POST',
@@ -53,7 +42,7 @@ export const api = {
   getMe: () =>
     request(`${API_URL}/auth/me`),
 
-  // ── Products ──
+  // products
   getProducts: (params = {}) => {
     const query = new URLSearchParams(
       Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== ''))
@@ -81,11 +70,11 @@ export const api = {
       method: 'DELETE',
     }),
 
-  // ── Analytics ──
+  // analytics
   getDashboardStats: () =>
     request(`${API_URL}/analytics/dashboard`),
 
-  // ── Orders ──
+  // orders
   createOrder: (items) =>
     request(`${API_URL}/orders`, {
       method: 'POST',
@@ -108,6 +97,5 @@ export const api = {
       body: JSON.stringify({ status, statusNote }),
     }),
 
-  // ── Health ──
   health: () => request(`${API_URL}/health`),
 };

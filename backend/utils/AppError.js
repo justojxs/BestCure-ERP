@@ -1,13 +1,6 @@
-/**
- * Custom application error class.
- * Extends native Error to include HTTP status codes and operational flags.
- * Operational errors (expected) are distinguished from programming errors (unexpected).
- */
+// custom error class with http status code
+// 4xx = client error (status: "fail"), 5xx = server error (status: "error")
 class AppError extends Error {
-  /**
-   * @param {string} message - Human-readable error message
-   * @param {number} statusCode - HTTP status code (4xx = client error, 5xx = server error)
-   */
   constructor(message, statusCode) {
     super(message);
 

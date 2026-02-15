@@ -10,10 +10,7 @@ import CustomerPortal from './pages/CustomerPortal';
 import OrderHistory from './pages/OrderHistory';
 import Orders from './pages/Orders';
 
-/**
- * Protected Route wrapper — redirects unauthenticated users to login,
- * and unauthorized roles to their default route.
- */
+// redirects to login if not authenticated, or to a fallback if wrong role
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user } = useAuth();
 
@@ -29,9 +26,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
-/**
- * Redirect to the appropriate default route based on user role.
- */
+// sends each role to their default landing page
 const RoleBasedRedirect = () => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
@@ -84,7 +79,6 @@ const AppRoutes = () => (
       } />
     </Route>
 
-    {/* Catch-all — redirect to home */}
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
 );

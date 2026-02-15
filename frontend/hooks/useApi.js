@@ -1,16 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-/**
- * Custom hook for API data fetching with loading, error, and refresh support.
- *
- * @param {Function} fetchFn - Async function that returns data (e.g. api.getProducts)
- * @param {Array} deps - Dependency array for re-fetching
- * @param {Object} options - Options: { immediate: boolean }
- * @returns {{ data, loading, error, refetch, setData }}
- *
- * @example
- *   const { data: products, loading, error, refetch } = useApi(api.getProducts, []);
- */
+// hook for fetching data — handles loading, errors, and refetching
 export function useApi(fetchFn, deps = [], options = { immediate: true }) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(options.immediate);
@@ -41,7 +31,7 @@ export function useApi(fetchFn, deps = [], options = { immediate: true }) {
         if (options.immediate) {
             fetchData();
         }
-    }, deps);
+    }, deps); // eslint-disable-line
 
     useEffect(() => {
         return () => {
@@ -52,16 +42,7 @@ export function useApi(fetchFn, deps = [], options = { immediate: true }) {
     return { data, loading, error, refetch: fetchData, setData };
 }
 
-/**
- * Custom hook for async mutations (POST, PUT, DELETE) with loading state.
- *
- * @param {Function} mutationFn - Async function to execute
- * @returns {{ mutate, loading, error, data }}
- *
- * @example
- *   const { mutate: deleteProduct, loading } = useMutation(api.deleteProduct);
- *   await deleteProduct(productId);
- */
+// hook for mutations (POST/PUT/DELETE) — returns { mutate, loading, error }
 export function useMutation(mutationFn) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);

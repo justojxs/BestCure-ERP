@@ -26,7 +26,7 @@ const app = express();
 const isProduction = process.env.NODE_ENV === "production";
 const isTest = process.env.NODE_ENV === "test";
 
-// ─── Security Middleware ───
+// security headers
 app.use(
   helmet({
     contentSecurityPolicy: isProduction ? undefined : false,
@@ -34,10 +34,10 @@ app.use(
   })
 );
 
-// ─── Rate Limiting ───
+// rate limiting — stricter on auth to prevent brute force
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: isProduction ? 100 : 1000, // limit per IP per window
+  windowMs: 15 * 60 * 1000,
+  max: isProduction ? 100 : 1000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { status: "fail", message: "Too many requests, please try again later" },
@@ -45,14 +45,13 @@ const limiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: isProduction ? 10 : 100, // Stricter limit on auth endpoints
+  max: isProduction ? 10 : 100,
   message: { status: "fail", message: "Too many login attempts, please try again later" },
 });
 
 app.use("/api/", limiter);
 app.use("/api/auth/", authLimiter);
 
-// ─── CORS ───
 app.use(
   cors({
     origin: isProduction ? false : true,
@@ -62,14 +61,11 @@ app.use(
   })
 );
 
-// ─── Body Parsing ───
-app.use(express.json({ limit: "10kb" })); // Limit body size
+app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
-
-// ─── Compression ───
 app.use(compression());
 
-// ─── Request Logging ───
+// request logging (skip in tests / skip health checks)
 if (!isTest) {
   app.use(
     morgan(isProduction ? "combined" : "dev", {
@@ -78,7 +74,7 @@ if (!isTest) {
   );
 }
 
-// ─── Health Check ───
+// health check
 app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
@@ -88,13 +84,13 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// ─── API Routes ───
+// routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/orders", orderRoutes);
 
-// ─── Production: Serve Frontend ───
+// serve built frontend in production
 if (isProduction) {
   const distPath = path.resolve(__dirname, "..", "dist");
   app.use(express.static(distPath));
@@ -104,15 +100,14 @@ if (isProduction) {
   });
 }
 
-// ─── 404 Handler ───
+// 404 catch-all
 app.use((req, res, next) => {
   next(new AppError(`Cannot find ${req.originalUrl} on this server`, 404));
 });
 
-// ─── Centralized Error Handler ───
 app.use(errorHandler);
 
-// ─── Database Connection & Server Start ───
+// connect to mongo and start listening
 const startServer = async () => {
   try {
     const mongoUri =
@@ -127,7 +122,7 @@ const startServer = async () => {
       logger.info(`Server running on port ${PORT} [${process.env.NODE_ENV || "development"}]`);
     });
 
-    // Graceful shutdown
+    // graceful shutdown on SIGTERM/SIGINT
     const shutdown = (signal) => {
       logger.info(`${signal} received. Shutting down gracefully...`);
       server.close(async () => {
@@ -136,7 +131,7 @@ const startServer = async () => {
         process.exit(0);
       });
 
-      // Force exit after 10s
+      // force exit if still hanging after 10s
       setTimeout(() => {
         logger.error("Forced shutdown after timeout");
         process.exit(1);
@@ -151,7 +146,7 @@ const startServer = async () => {
   }
 };
 
-// Only start server if not in test mode (tests will import `app` directly)
+// tests import `app` directly, so only start the server when running normally
 if (!isTest) {
   startServer();
 }
