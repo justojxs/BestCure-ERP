@@ -276,12 +276,12 @@ export default function Billing() {
             <p style={{ fontSize: '14px', color: '#444' }}>Due Date: {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</p>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#0d9488', margin: 0 }}>BestCure Vet Inc.</h2>
-            <p style={{ fontSize: '13px', marginTop: '4px', maxWidth: '200px', marginLeft: 'auto', lineHeight: '1.4' }}>
-              123 Vet Street, Bandra West<br />
-              Mumbai, Maharashtra 400050<br />
-              GST: 27ABCDE1234F1Z5<br />
-              contact@bestcure.com
+            <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#0d9488', margin: 0, textTransform: 'uppercase' }}>BEST CURE MEDICAL AND GENERAL ENTP</h2>
+            <p style={{ fontSize: '13px', marginTop: '6px', maxWidth: '300px', marginLeft: 'auto', lineHeight: '1.5', color: '#333' }}>
+              553/16, Civil Lines<br />
+              Gurgaon, Haryana 122001<br />
+              GST: 06ALGPK8117K1ZX<br />
+              Contact: 9354708361
             </p>
           </div>
         </div>
