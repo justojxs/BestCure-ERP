@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import {
   ShoppingCart, Plus, Trash2, Printer, Search, Package,
-  Filter, ChevronRight, User, FileText, Minus
+  Filter, ChevronRight, User, FileText, Minus, RefreshCw
 } from 'lucide-react';
 
 export default function Billing() {
@@ -11,6 +11,9 @@ export default function Billing() {
   const [searchTerm, setSearchTerm] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [invoiceNum, setInvoiceNum] = useState(''); // Empty initially
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
 
   useEffect(() => {
     api.getProducts().then(data => {
@@ -20,6 +23,8 @@ export default function Billing() {
   }, []);
 
   const addToCart = (product) => {
+    setOrderSuccess(false); // Reset success state if modifying cart
+    setInvoiceNum('');
     const existing = cart.find(item => item._id === product._id);
     if (existing) {
       if (existing.qty >= product.stock) return;
@@ -32,6 +37,8 @@ export default function Billing() {
   };
 
   const decreaseQty = (id) => {
+    setOrderSuccess(false);
+    setInvoiceNum('');
     const existing = cart.find(item => item._id === id);
     if (existing.qty > 1) {
       setCart(cart.map(item =>
@@ -43,7 +50,17 @@ export default function Billing() {
   };
 
   const removeFromCart = (id) => {
+    setOrderSuccess(false);
+    setInvoiceNum('');
     setCart(cart.filter(item => item._id !== id));
+  };
+
+  const resetOrder = () => {
+    setCart([]);
+    setCustomerName('');
+    setInvoiceNum('');
+    setOrderSuccess(false);
+    setSearchTerm('');
   };
 
   const calculateTotal = () => {
@@ -53,20 +70,56 @@ export default function Billing() {
   };
 
   const { subtotal, tax, total } = calculateTotal();
-  const invoiceNum = `INV-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
 
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.batch.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handlePrint = () => {
-    window.print();
+  const handleProcessAndPrint = async () => {
+    if (!customerName.trim()) {
+      alert("Please enter customer name");
+      return;
+    }
+
+    if (cart.length === 0) return;
+
+    // If order already placed (invoice number exists), just print
+    if (invoiceNum) {
+      window.print();
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const orderItems = cart.map(item => ({
+        product: item._id,
+        quantity: item.qty
+      }));
+
+      const response = await api.createOrder({
+        items: orderItems,
+        customerName: customerName
+      });
+
+      setInvoiceNum(response.orderNumber);
+      setOrderSuccess(true);
+
+      // Wait for render cycle to update DOM with new invoice number before printing
+      setTimeout(() => {
+        window.print();
+        setIsProcessing(false);
+      }, 500);
+
+    } catch (error) {
+      console.error("Failed to create order", error);
+      alert("Failed to process order: " + error.message);
+      setIsProcessing(false);
+    }
   };
 
   return (
     <>
-      {/* ── Main UI (Visible on screen, hidden on print) ── */}
       <div className="animate-fadeIn no-print-container" style={{ height: 'calc(100vh - 100px)', display: 'flex', gap: '32px' }}>
 
         {/* ── LEFT: Product Catalog ── */}
@@ -74,8 +127,17 @@ export default function Billing() {
 
           {/* Header & Search */}
           <div style={{ marginBottom: '24px' }}>
-            <h1 className="page-title">New Order</h1>
-            <p className="page-subtitle">Select medicines to create an invoice</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h1 className="page-title">New Order</h1>
+                <p className="page-subtitle">Select medicines to create an invoice</p>
+              </div>
+              {orderSuccess && (
+                <button onClick={resetOrder} className="btn btn-secondary" style={{ display: 'flex', gap: '8px' }}>
+                  <RefreshCw size={16} /> New Order
+                </button>
+              )}
+            </div>
 
             <div style={{ marginTop: '24px', display: 'flex', gap: '16px' }}>
               <div style={{ position: 'relative', flex: 1 }}>
@@ -168,7 +230,7 @@ export default function Billing() {
         <div className="card" style={{ width: '400px', display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%', border: 'none', boxShadow: 'var(--shadow-xl)' }}>
 
           {/* Invoice Header */}
-          <div style={{ padding: '24px', background: 'var(--color-slate-900)', color: 'white' }}>
+          <div style={{ padding: '24px', background: orderSuccess ? 'var(--color-success)' : 'var(--color-slate-900)', color: 'white', transition: 'background 0.3s ease' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ padding: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
@@ -176,7 +238,7 @@ export default function Billing() {
                 </div>
                 <div>
                   <p style={{ fontSize: '12px', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1px' }}>Invoice</p>
-                  <p style={{ fontWeight: '700', fontSize: '16px' }}>{invoiceNum}</p>
+                  <p style={{ fontWeight: '700', fontSize: '16px' }}>{invoiceNum || 'DRAFT'}</p>
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
@@ -189,15 +251,17 @@ export default function Billing() {
               <User size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
               <input
                 type="text"
-                placeholder="Customer Name..."
+                placeholder="Customer Name (Required)"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 className="form-input"
+                disabled={orderSuccess}
                 style={{
                   background: 'rgba(255,255,255,0.1)',
                   border: '1px solid rgba(255,255,255,0.2)',
                   color: 'white',
-                  paddingLeft: '36px'
+                  paddingLeft: '36px',
+                  outline: 'none',
                 }}
               />
             </div>
@@ -224,7 +288,8 @@ export default function Billing() {
                       <p style={{ fontWeight: '700', fontSize: '14px' }}>₹{(item.qty * item.price).toFixed(2)}</p>
                       <button
                         onClick={() => removeFromCart(item._id)}
-                        style={{ color: 'var(--color-danger)', fontSize: '11px', marginTop: '4px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}
+                        disabled={orderSuccess}
+                        style={{ color: 'var(--color-danger)', fontSize: '11px', marginTop: '4px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px', opacity: orderSuccess ? 0.5 : 1 }}
                       >
                         <Trash2 size={12} /> Remove
                       </button>
@@ -252,12 +317,13 @@ export default function Billing() {
             </div>
 
             <button
-              onClick={handlePrint}
-              disabled={cart.length === 0}
-              className="btn btn-primary"
+              onClick={handleProcessAndPrint}
+              disabled={cart.length === 0 || isProcessing || (!invoiceNum && !customerName.trim())}
+              className={`btn ${orderSuccess ? 'btn-secondary' : 'btn-primary'}`}
               style={{ width: '100%', padding: '16px', fontSize: '16px', borderRadius: '12px' }}
             >
-              <Printer size={20} /> Print Invoice
+              {isProcessing ? 'Processing Order...' : invoiceNum ? 'Reprint Invoice' : 'Generate & Print Invoice'}
+              {!isProcessing && <Printer size={20} />}
             </button>
           </div>
         </div>
@@ -271,7 +337,7 @@ export default function Billing() {
         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #000', paddingBottom: '20px', marginBottom: '32px' }}>
           <div>
             <h1 style={{ fontSize: '28px', fontWeight: '800', margin: 0, textTransform: 'uppercase', letterSpacing: '1px' }}>INVOICE</h1>
-            <p style={{ fontSize: '14px', marginTop: '8px', color: '#444' }}>No: {invoiceNum}</p>
+            <p style={{ fontSize: '14px', marginTop: '8px', color: '#444' }}>No: {invoiceNum || 'DRAFT'}</p>
             <p style={{ fontSize: '14px', color: '#444' }}>Date: {new Date().toLocaleDateString()}</p>
             <p style={{ fontSize: '14px', color: '#444' }}>Due Date: {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</p>
           </div>

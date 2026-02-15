@@ -82,11 +82,13 @@ export const api = {
     request(`${API_URL}/analytics/dashboard`),
 
   // orders
-  createOrder: (items) =>
-    request(`${API_URL}/orders`, {
+  createOrder: (itemsOrData) => {
+    const body = Array.isArray(itemsOrData) ? { items: itemsOrData } : itemsOrData;
+    return request(`${API_URL}/orders`, {
       method: 'POST',
-      body: JSON.stringify({ items }),
-    }),
+      body: JSON.stringify(body),
+    });
+  },
 
   getOrders: (params = {}) => {
     const query = new URLSearchParams(

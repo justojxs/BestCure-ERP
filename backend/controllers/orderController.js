@@ -73,13 +73,19 @@ const createOrder = asyncHandler(async (req, res) => {
         const total = Math.round((subtotal + tax) * 100) / 100;
         const orderNumber = await generateOrderNumber();
 
+        // Determine customer name based on role
+        let customerName = req.user.name;
+        if ((req.user.role === 'admin' || req.user.role === 'staff') && req.body.customerName) {
+            customerName = req.body.customerName;
+        }
+
         // create order inside the transaction
         const [order] = await Order.create(
             [
                 {
                     orderNumber,
                     customer: req.user._id,
-                    customerName: req.user.name,
+                    customerName,
                     items: orderItems,
                     subtotal: Math.round(subtotal * 100) / 100,
                     tax,
