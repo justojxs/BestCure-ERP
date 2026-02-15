@@ -2,57 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import {
     FileText, Download, Eye, Clock, ArrowLeft,
-    CheckCircle, XCircle, Package, Calendar, Search
+    CheckCircle, XCircle, Package, Search
 } from 'lucide-react';
-
-// ─── Invoice Generator ───
-const generateInvoiceHTML = (order) => {
-    const itemsHTML = order.items.map((item, i) => `
-    <tr style="border-bottom:1px solid #f1f5f9">
-      <td style="padding:12px 16px;font-size:13px;color:#475569">${i + 1}</td>
-      <td style="padding:12px 16px"><div style="font-weight:600;font-size:13px;color:#0f172a">${item.name}</div><div style="font-size:11px;color:#94a3b8;margin-top:2px">${item.batch || ''}</div></td>
-      <td style="padding:12px 16px;text-align:center;font-size:13px;color:#475569">${item.quantity}</td>
-      <td style="padding:12px 16px;text-align:right;font-size:13px;color:#475569">₹${item.price.toFixed(2)}</td>
-      <td style="padding:12px 16px;text-align:right;font-size:13px;font-weight:600;color:#0f172a">₹${(item.price * item.quantity).toFixed(2)}</td>
-    </tr>
-  `).join('');
-
-    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Invoice ${order.orderNumber}</title>
-<style>@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}body{font-family:'Inter','Segoe UI',sans-serif;margin:0;padding:40px;background:#fff;color:#0f172a}</style></head>
-<body><div style="max-width:700px;margin:0 auto">
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px">
-    <div><div style="font-size:24px;font-weight:800;color:#059669;letter-spacing:-0.5px">BestCure</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">Veterinary Medicine Distribution</div></div>
-    <div style="text-align:right"><div style="font-size:20px;font-weight:700;color:#0f172a">INVOICE</div><div style="font-size:12px;color:#64748b;margin-top:4px">${order.orderNumber}</div><div style="font-size:12px;color:#64748b;margin-top:2px">${new Date(order.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</div></div>
-  </div>
-  <div style="display:flex;justify-content:space-between;padding:20px 24px;background:#f8fafc;border-radius:12px;margin-bottom:30px">
-    <div><div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Bill To</div><div style="font-size:14px;font-weight:600;color:#0f172a">${order.customerName}</div></div>
-    <div style="text-align:right"><div style="font-size:10px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Status</div><div style="font-size:14px;font-weight:600;color:${order.status === 'accepted' ? '#059669' : order.status === 'rejected' ? '#ef4444' : '#f59e0b'};text-transform:capitalize">${order.status}</div></div>
-  </div>
-  <table style="width:100%;border-collapse:collapse;margin-bottom:30px">
-    <thead><tr style="background:#0f172a"><th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">#</th><th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">Item</th><th style="padding:12px 16px;text-align:center;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">Qty</th><th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">Price</th><th style="padding:12px 16px;text-align:right;font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">Total</th></tr></thead>
-    <tbody>${itemsHTML}</tbody>
-  </table>
-  <div style="display:flex;justify-content:flex-end">
-    <div style="width:260px">
-      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px"><span style="color:#64748b">Subtotal</span><span style="color:#475569;font-weight:500">₹${order.subtotal.toFixed(2)}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px"><span style="color:#64748b">GST (18%)</span><span style="color:#475569;font-weight:500">₹${order.tax.toFixed(2)}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:14px 0 0;margin-top:8px;border-top:2px solid #0f172a;font-size:18px;font-weight:700"><span>Total</span><span style="color:#059669">₹${order.total.toFixed(2)}</span></div>
-    </div>
-  </div>
-  <div style="margin-top:50px;padding-top:20px;border-top:1px solid #e2e8f0;text-align:center;font-size:11px;color:#94a3b8">Thank you for your business · BestCure Veterinary Medicine Distribution</div>
-</div></body></html>`;
-};
-
-const downloadInvoice = (order) => {
-    const html = generateInvoiceHTML(order);
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const win = window.open(url, '_blank');
-    setTimeout(() => {
-        win.print();
-        URL.revokeObjectURL(url);
-    }, 600);
-};
+import InvoiceTemplate from '../components/InvoiceTemplate';
 
 // ─── Status Badge ───
 const StatusBadge = ({ status, size = 'md' }) => {
@@ -84,6 +36,7 @@ export default function OrderHistory() {
     const [viewingOrder, setViewingOrder] = useState(null);
     const [filter, setFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
+    const [printingOrder, setPrintingOrder] = useState(null);
 
     useEffect(() => {
         loadOrders();
@@ -98,6 +51,15 @@ export default function OrderHistory() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handlePrint = (order) => {
+        setPrintingOrder(order);
+        // Delay to allow DOM to render the invoice template
+        setTimeout(() => {
+            window.print();
+            // Optional: reset printing order after delay, though keeping it invisible shouldn't hurt
+        }, 500);
     };
 
     const filteredOrders = orders.filter(o => {
@@ -133,7 +95,7 @@ export default function OrderHistory() {
     // ─── Order Detail View ───
     if (viewingOrder) {
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div className="no-print-container" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <button onClick={() => setViewingOrder(null)} style={{
                     display: 'inline-flex', alignItems: 'center', gap: '8px',
                     background: 'none', border: 'none', color: '#64748b', fontSize: '14px',
@@ -173,7 +135,7 @@ export default function OrderHistory() {
                         <div style={{ textAlign: 'right' }}>
                             <StatusBadge status={viewingOrder.status} size="lg" />
                             {viewingOrder.status === 'accepted' && (
-                                <button onClick={() => downloadInvoice(viewingOrder)} style={{
+                                <button onClick={() => handlePrint(viewingOrder)} style={{
                                     display: 'flex', alignItems: 'center', gap: '6px',
                                     marginTop: '12px', padding: '8px 16px',
                                     background: 'rgba(5,150,105,0.15)', border: '1px solid rgba(5,150,105,0.3)',
@@ -242,13 +204,17 @@ export default function OrderHistory() {
                         </div>
                     </div>
                 </div>
+                {/* Print Template Injection */}
+                <div className="printable-invoice" style={{ display: 'none' }}>
+                    <InvoiceTemplate order={printingOrder || viewingOrder} />
+                </div>
             </div>
         );
     }
 
     // ─── Order History Main View ───
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div className="no-print-container" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
             {/* Header */}
             <div>
@@ -261,11 +227,7 @@ export default function OrderHistory() {
             </div>
 
             {/* Stats */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-                gap: '14px',
-            }}>
+            <div className="grid-4">
                 {[
                     { label: 'Total Orders', value: stats.total, color: '#3b82f6', bg: 'rgba(59,130,246,0.06)' },
                     { label: 'Pending', value: stats.pending, color: '#f59e0b', bg: 'rgba(245,158,11,0.06)' },
@@ -410,7 +372,7 @@ export default function OrderHistory() {
                                         <Eye size={13} /> View Details
                                     </button>
                                     {order.status === 'accepted' && (
-                                        <button onClick={(e) => { e.stopPropagation(); downloadInvoice(order); }} style={{
+                                        <button onClick={(e) => { e.stopPropagation(); handlePrint(order); }} style={{
                                             display: 'flex', alignItems: 'center', gap: '6px',
                                             padding: '6px 14px', borderRadius: '8px',
                                             background: 'rgba(5,150,105,0.06)', border: '1px solid rgba(5,150,105,0.15)',
@@ -424,6 +386,11 @@ export default function OrderHistory() {
                         ))}
                     </div>
                 )}
+            </div>
+
+            {/* Injection for Main List View Printing if needed (usually only needed inside detail view or passing state) */}
+            <div className="printable-invoice" style={{ display: 'none' }}>
+                <InvoiceTemplate order={printingOrder} />
             </div>
         </div>
     );
