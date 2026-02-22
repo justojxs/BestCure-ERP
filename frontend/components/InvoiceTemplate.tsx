@@ -12,7 +12,8 @@ export default function InvoiceTemplate({ order }) {
         items,
         subtotal,
         tax,
-        total
+        total,
+        gstRate = 18
     } = order;
 
     // Handle different prop names or fallbacks
@@ -83,7 +84,7 @@ export default function InvoiceTemplate({ order }) {
                         <span>₹{subtotal.toFixed(2)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px', color: '#444' }}>
-                        <span>GST (18%):</span>
+                        <span>GST ({gstRate === 0 ? 'Tax Free' : `${gstRate}%`}):</span>
                         <span>₹{tax.toFixed(2)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', borderTop: '2px solid #000', paddingTop: '16px', fontSize: '18px', fontWeight: '800' }}>

@@ -83,7 +83,8 @@ const createOrder = asyncHandler(async (req: any, res: Response) => {
         }
 
         const subtotal = orderItems.reduce((acc, i) => acc + i.price * i.quantity, 0);
-        const tax = Math.round(subtotal * 0.18 * 100) / 100; // 18% GST hardcoded for now
+        const gstRate = req.body.gstRate !== undefined ? Number(req.body.gstRate) : 18;
+        const tax = Math.round(subtotal * (gstRate / 100) * 100) / 100;
         const total = Math.round((subtotal + tax) * 100) / 100;
         const orderNumber = await generateOrderNumber();
 

@@ -5,12 +5,20 @@ const API_URL = import.meta.env.VITE_API_URL || '/api';
 // dynamically adds the Authorization header if a token exists
 const getHeaders = () => {
   try {
-    const user = JSON.parse(localStorage.getItem('bestcure_user'));
-    return {
+    const userStr = localStorage.getItem('bestcure_user');
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...(user?.token && { Authorization: `Bearer ${user.token}` }),
     };
-  } catch {
+
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      if (user && user.token) {
+        headers['Authorization'] = `Bearer ${user.token}`;
+      }
+    }
+
+    return headers;
+  } catch (error) {
     // fallback if local storage is corrupted
     return { 'Content-Type': 'application/json' };
   }

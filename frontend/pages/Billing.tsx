@@ -12,6 +12,7 @@ export default function Billing() {
   const [searchTerm, setSearchTerm] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
+  const [gstRate, setGstRate] = useState(18);
   const [loading, setLoading] = useState(true);
   const [invoiceNum, setInvoiceNum] = useState(''); // Empty initially
   const [isProcessing, setIsProcessing] = useState(false);
@@ -68,7 +69,7 @@ export default function Billing() {
 
   const calculateTotal = () => {
     const subtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-    const tax = subtotal * 0.18;
+    const tax = subtotal * (gstRate / 100);
     return { subtotal, tax, total: subtotal + tax };
   };
 
@@ -103,7 +104,8 @@ export default function Billing() {
       const response = await api.createOrder({
         items: orderItems,
         customerName: customerName,
-        customerEmail: customerEmail.trim() || undefined
+        customerEmail: customerEmail.trim() || undefined,
+        gstRate: gstRate
       });
 
       setInvoiceNum(response.orderNumber);
@@ -290,79 +292,102 @@ export default function Billing() {
             </div>
           </div>
 
-          {/* Cart Items */}
-          <div className="no-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-            {cart.length === 0 ? (
-              <div className="empty-state" style={{ padding: '40px 0' }}>
-                <ShoppingCart size={40} className="empty-state-icon" style={{ margin: '0 auto 16px' }} />
-                <p style={{ color: 'var(--color-slate-400)' }}>Cart is empty</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {cart.map(item => (
-                  <div key={item._id} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'var(--surface-bg)', borderRadius: '12px' }}>
-                    <div>
-                      <p style={{ fontWeight: '600', fontSize: '14px' }}>{item.name}</p>
-                      <p style={{ fontSize: '12px', color: 'var(--color-slate-500)' }}>
-                        {item.qty} x ₹{item.price}
-                      </p>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontWeight: '700', fontSize: '14px' }}>₹{(item.qty * item.price).toFixed(2)}</p>
-                      <button
-                        onClick={() => removeFromCart(item._id)}
-                        disabled={orderSuccess}
-                        style={{ color: 'var(--color-danger)', fontSize: '11px', marginTop: '4px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px', opacity: orderSuccess ? 0.5 : 1 }}
-                      >
-                        <Trash2 size={12} /> Remove
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Summary Footer */}
-          <div style={{ padding: '24px', background: 'var(--surface-bg)', borderTop: '1px solid var(--surface-border)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
-              <span style={{ color: 'var(--color-slate-500)' }}>Subtotal</span>
-              <span style={{ fontWeight: '600' }}>₹{subtotal.toFixed(2)}</span>
+          {/* GST Toggles */}
+          <div style={{ marginTop: '16px' }}>
+            <label style={{ display: 'block', fontSize: '13px', color: '#64748b', marginBottom: '8px', fontWeight: 600 }}>TAX RATE (GST)</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {[0, 10, 18, 28].map(rate => (
+                <button
+                  key={rate}
+                  onClick={() => setGstRate(rate)}
+                  disabled={orderSuccess}
+                  style={{
+                    flex: 1, padding: '8px 0', border: 'none', borderRadius: '8px',
+                    background: gstRate === rate ? '#3b82f6' : 'rgba(255,255,255,0.1)',
+                    color: gstRate === rate ? 'white' : '#cbd5e1',
+                    fontWeight: 600, fontSize: '13px', cursor: orderSuccess ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {rate === 0 ? 'Tax Free' : `${rate}%`}
+                </button>
+              ))}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '14px' }}>
-              <span style={{ color: 'var(--color-slate-500)' }}>Tax (18%)</span>
-              <span style={{ fontWeight: '600' }}>₹{tax.toFixed(2)}</span>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <span style={{ fontSize: '16px', fontWeight: '700' }}>Total</span>
-              <span style={{ fontSize: '24px', fontWeight: '800', color: 'var(--color-slate-900)' }}>₹{total.toFixed(2)}</span>
-            </div>
-
-            <button
-              onClick={handleProcessAndPrint}
-              disabled={cart.length === 0 || isProcessing || (!invoiceNum && !customerName.trim())}
-              className={`btn ${orderSuccess ? 'btn-secondary' : 'btn-primary'}`}
-              style={{ width: '100%', padding: '16px', fontSize: '16px', borderRadius: '12px' }}
-            >
-              {isProcessing ? 'Processing Order...' : invoiceNum ? 'Reprint Invoice' : 'Generate & Print Invoice'}
-              {!isProcessing && <Printer size={20} />}
-            </button>
           </div>
         </div>
 
+        {/* Cart Items */}
+        <div className="no-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+          {cart.length === 0 ? (
+            <div className="empty-state" style={{ padding: '40px 0' }}>
+              <ShoppingCart size={40} className="empty-state-icon" style={{ margin: '0 auto 16px' }} />
+              <p style={{ color: 'var(--color-slate-400)' }}>Cart is empty</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {cart.map(item => (
+                <div key={item._id} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px', background: 'var(--surface-bg)', borderRadius: '12px' }}>
+                  <div>
+                    <p style={{ fontWeight: '600', fontSize: '14px' }}>{item.name}</p>
+                    <p style={{ fontSize: '12px', color: 'var(--color-slate-500)' }}>
+                      {item.qty} x ₹{item.price}
+                    </p>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <p style={{ fontWeight: '700', fontSize: '14px' }}>₹{(item.qty * item.price).toFixed(2)}</p>
+                    <button
+                      onClick={() => removeFromCart(item._id)}
+                      disabled={orderSuccess}
+                      style={{ color: 'var(--color-danger)', fontSize: '11px', marginTop: '4px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px', opacity: orderSuccess ? 0.5 : 1 }}
+                    >
+                      <Trash2 size={12} /> Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Summary Footer */}
+        <div style={{ padding: '24px', background: 'var(--surface-bg)', borderTop: '1px solid var(--surface-border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '14px' }}>
+            <span style={{ color: 'var(--color-slate-500)' }}>Subtotal</span>
+            <span style={{ fontWeight: '600' }}>₹{subtotal.toFixed(2)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '14px' }}>
+            <span style={{ color: 'var(--color-slate-500)' }}>GST ({gstRate === 0 ? 'Tax Free' : `${gstRate}%`})</span>
+            <span style={{ fontWeight: '600' }}>₹{tax.toFixed(2)}</span>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <span style={{ fontSize: '16px', fontWeight: '700' }}>Total</span>
+            <span style={{ fontSize: '24px', fontWeight: '800', color: 'var(--color-slate-900)' }}>₹{total.toFixed(2)}</span>
+          </div>
+
+          <button
+            onClick={handleProcessAndPrint}
+            disabled={cart.length === 0 || isProcessing || (!invoiceNum && !customerName.trim())}
+            className={`btn ${orderSuccess ? 'btn-secondary' : 'btn-primary'}`}
+            style={{ width: '100%', padding: '16px', fontSize: '16px', borderRadius: '12px' }}
+          >
+            {isProcessing ? 'Processing Order...' : invoiceNum ? 'Reprint Invoice' : 'Generate & Print Invoice'}
+            {!isProcessing && <Printer size={20} />}
+          </button>
+        </div>
       </div>
 
       {/* ── PRINT-ONLY INVOICE TEMPLATE ── */}
       <div className="printable-invoice" style={{ display: 'none' }}>
         <InvoiceTemplate order={{
           orderNumber: invoiceNum || 'DRAFT',
-          customerName: customerName,
-          customerEmail: customerEmail,
+          customerName,
+          customerEmail,
           items: cart,
           subtotal,
           tax,
           total,
+          gstRate,
           createdAt: new Date().toISOString()
         }} />
       </div>
