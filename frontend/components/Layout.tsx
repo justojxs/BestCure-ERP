@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, Package, Receipt, LogOut, Menu, X,
-  ShoppingBag, UserCircle, ClipboardList, Users
+  ShoppingBag, UserCircle, ClipboardList, Users, BarChart3
 } from 'lucide-react';
 import BestCureLogo from './BestCureLogo';
 
@@ -38,6 +38,7 @@ export default function Layout() {
     const map = {
       '/dashboard': 'Overview',
       '/staff': 'Staff Management',
+      '/staff-analytics': 'Staff Analytics',
       '/inventory': 'Inventory',
       '/billing': 'Billing',
       '/orders': 'Orders',
@@ -81,7 +82,12 @@ export default function Layout() {
             <>
               <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" />
               <NavItem to="/staff" icon={Users} label="Manage Staff" />
+              <NavItem to="/staff-analytics" icon={BarChart3} label="Staff Analytics" />
             </>
+          )}
+
+          {user?.role === 'staff' && (
+            <NavItem to="/staff-analytics" icon={BarChart3} label="My Performance" />
           )}
 
           {(user?.role === 'admin' || user?.role === 'staff') && (

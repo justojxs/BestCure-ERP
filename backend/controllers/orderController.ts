@@ -110,6 +110,7 @@ const createOrder = asyncHandler(async (req: any, res: Response) => {
         // Determine initial status based on role
         const initialStatus = isStaffOrAdmin ? 'accepted' : 'pending';
         const acceptedBy = isStaffOrAdmin ? req.user._id : undefined;
+        const createdBy = isStaffOrAdmin ? req.user._id : undefined;
 
         // create order inside the transaction
         const [order] = await Order.create(
@@ -125,6 +126,7 @@ const createOrder = asyncHandler(async (req: any, res: Response) => {
                     total,
                     status: initialStatus,
                     acceptedBy,
+                    createdBy,
                 },
             ],
             { session }

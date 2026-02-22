@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Response } from "express";
 import { protect, authorize } from "../middleware/authMiddleware.js";
 import Product from "../models/Product.js";
 import Order from "../models/Order.js";
@@ -13,7 +13,7 @@ router.get(
   "/dashboard",
   protect,
   authorize("admin"),
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: any, res: Response) => {
     const now = new Date();
 
     // run all queries in parallel
@@ -238,7 +238,7 @@ router.get(
     const orderStatusData = orderStatusAgg.map((s) => ({
       name: s._id.charAt(0).toUpperCase() + s._id.slice(1),
       value: s.count,
-      color: statusColors[s._id] || "#94a3b8",
+      color: (statusColors as any)[s._id] || "#94a3b8",
     }));
 
     // ─── Format top products ───
@@ -255,7 +255,7 @@ router.get(
       stock: p.stock,
       minStock: p.minStock,
       category: p.category,
-      severity: p.stock === 0 ? "critical" : p.stock < p.minStock * 0.5 ? "high" : "medium",
+      severity: (p as any).stock === 0 ? "critical" : (p as any).stock < (p as any).minStock * 0.5 ? "high" : "medium",
     }));
 
     // ─── Extract KPIs ───
@@ -286,6 +286,66 @@ router.get(
       stockAlerts,
       expiringProducts,
       recentOrders,
+    });
+  })
+);
+
+// GET /api/analytics/staff-performance
+router.get(
+  "/staff-performance",
+  protect,
+  authorize("admin", "staff"),
+  asyncHandler(async (req: any, res: Response) => {
+    const isStaff = req.user.role === "staff";
+
+    // Base match for createdBy field existence
+    const matchStage: any = { createdBy: { $exists: true } };
+
+    // Staff can only see their own performance
+    if (isStaff) {
+      matchStage.createdBy = req.user._id;
+    }
+
+    // Get aggregated data per staff member
+    const staffPerformance = await Order.aggregate([
+      { $match: matchStage },
+      {
+        $group: {
+          _id: "$createdBy",
+          invoicesGenerated: { $sum: 1 },
+          totalRevenue: { $sum: "$total" },
+          averageInvoiceValue: { $avg: "$total" },
+          lastInvoiceDate: { $max: "$createdAt" }
+        }
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "staffDetails"
+        }
+      },
+      { $unwind: "$staffDetails" },
+      {
+        $project: {
+          _id: 1,
+          name: "$staffDetails.name",
+          email: "$staffDetails.email",
+          invoicesGenerated: 1,
+          totalRevenue: { $round: ["$totalRevenue", 2] },
+          averageInvoiceValue: { $round: ["$averageInvoiceValue", 2] },
+          lastInvoiceDate: 1
+        }
+      },
+      { $sort: { invoicesGenerated: -1 } }
+    ]);
+
+    // For admins, return all staff performances
+    // For a single staff, we return their specific object (or array with 1 item)
+    res.json({
+      success: true,
+      data: staffPerformance
     });
   })
 );

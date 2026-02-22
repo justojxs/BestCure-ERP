@@ -126,4 +126,5 @@ export const api = {
     request(`${API_URL}/users/staff/${id}`, {
       method: 'DELETE',
     }),
+  getStaffPerformance: () => request(`${API_URL}/analytics/staff-performance`),
 };

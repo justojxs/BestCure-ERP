@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import StaffManagement from './pages/StaffManagement';
+import StaffAnalytics from './pages/StaffAnalytics';
 import Inventory from './pages/Inventory';
 import Billing from './pages/Billing';
 import CustomerPortal from './pages/CustomerPortal';
@@ -66,6 +67,12 @@ const AppRoutes = () => (
       <Route path="orders" element={
         <ProtectedRoute allowedRoles={['admin', 'staff']}>
           <Orders />
+        </ProtectedRoute>
+      } />
+
+      <Route path="staff-analytics" element={
+        <ProtectedRoute allowedRoles={['admin', 'staff']}>
+          <StaffAnalytics />
         </ProtectedRoute>
       } />
 
