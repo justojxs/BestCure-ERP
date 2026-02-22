@@ -218,7 +218,7 @@ export default function Login() {
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <div className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} />
-                    Signing in...
+                    Signing in... this might take a short while
                   </span>
                 ) : (
                   <>Sign In <ArrowRight size={18} /></>
