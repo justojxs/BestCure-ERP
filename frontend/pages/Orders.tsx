@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import {
     ClipboardList, CheckCircle, XCircle, Clock, Eye,
-    Package, ArrowLeft, FileText, User, Calendar, Search, Filter
+    Package, ArrowLeft, FileText, User, Calendar, Search, Filter, Printer
 } from 'lucide-react';
+import InvoiceTemplate from '../components/InvoiceTemplate';
 
 export default function Orders() {
     const [orders, setOrders] = useState([]);
@@ -148,37 +149,65 @@ export default function Orders() {
                     </div>
 
                     {/* Action Footer */}
-                    {viewingOrder.status === 'pending' && (
-                        <div className="card-footer" style={{ padding: '24px 32px', borderTop: '1px solid var(--surface-border)', background: 'var(--color-slate-50)' }}>
-                            <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: 'var(--color-slate-600)' }}>Process Order</h3>
-                            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                                <input
-                                    type="text"
-                                    placeholder="Add a note (optional)..."
-                                    value={statusNote}
-                                    onChange={(e) => setStatusNote(e.target.value)}
-                                    className="form-input"
-                                    style={{ flex: 1 }}
-                                />
+                    <div className="card-footer" style={{ padding: '24px 32px', borderTop: '1px solid var(--surface-border)', background: 'var(--color-slate-50)' }}>
+                        {viewingOrder.status === 'pending' && (
+                            <div style={{ marginBottom: '24px' }}>
+                                <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: 'var(--color-slate-600)' }}>Process Order</h3>
+                                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                                    <input
+                                        type="text"
+                                        placeholder="Add a note (optional)..."
+                                        value={statusNote}
+                                        onChange={(e) => setStatusNote(e.target.value)}
+                                        className="form-input"
+                                        style={{ flex: 1 }}
+                                    />
+                                    <button
+                                        onClick={() => handleStatusUpdate(viewingOrder._id, 'accepted')}
+                                        disabled={processing}
+                                        className="btn btn-success"
+                                    >
+                                        <CheckCircle size={18} />
+                                        {processing === viewingOrder._id + 'accepted' ? 'Accepting...' : 'Accept Order'}
+                                    </button>
+                                    <button
+                                        onClick={() => handleStatusUpdate(viewingOrder._id, 'rejected')}
+                                        disabled={processing}
+                                        className="btn btn-danger"
+                                    >
+                                        <XCircle size={18} />
+                                        {processing === viewingOrder._id + 'rejected' ? 'Rejecting...' : 'Reject Order'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {(viewingOrder.status === 'accepted' || viewingOrder.status === 'pending') && (
+                            <div>
                                 <button
-                                    onClick={() => handleStatusUpdate(viewingOrder._id, 'accepted')}
-                                    disabled={processing}
-                                    className="btn btn-success"
+                                    onClick={() => {
+                                        setTimeout(() => window.print(), 100);
+                                    }}
+                                    className="btn btn-primary"
                                 >
-                                    <CheckCircle size={18} />
-                                    {processing === viewingOrder._id + 'accepted' ? 'Accepting...' : 'Accept Order'}
-                                </button>
-                                <button
-                                    onClick={() => handleStatusUpdate(viewingOrder._id, 'rejected')}
-                                    disabled={processing}
-                                    className="btn btn-danger"
-                                >
-                                    <XCircle size={18} />
-                                    {processing === viewingOrder._id + 'rejected' ? 'Rejecting...' : 'Reject Order'}
+                                    <Printer size={18} /> Download / Print Invoice
                                 </button>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
+                </div>
+
+                {/* ── PRINT-ONLY INVOICE TEMPLATE ── */}
+                <div className="printable-invoice" style={{ display: 'none' }}>
+                    <InvoiceTemplate order={{
+                        orderNumber: viewingOrder.orderNumber,
+                        customerName: viewingOrder.customerName,
+                        items: viewingOrder.items,
+                        subtotal: viewingOrder.subtotal,
+                        tax: viewingOrder.tax,
+                        total: viewingOrder.total,
+                        createdAt: viewingOrder.createdAt
+                    }} />
                 </div>
             </div>
         );
@@ -303,7 +332,7 @@ export default function Orders() {
                         <tbody>
                             {filteredOrders.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="empty-state">
+                                    <td colSpan={7} className="empty-state">
                                         <div className="empty-state-icon">
                                             <ClipboardList size={48} />
                                         </div>
