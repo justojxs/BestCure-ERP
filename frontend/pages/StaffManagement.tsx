@@ -181,11 +181,9 @@ export default function StaffManagement() {
                                                 <button
                                                     onClick={() => handleDeleteStaff(staff._id, staff.email)}
                                                     style={{
-                                                        background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer',
-                                                        opacity: staff.email === 'ojas@bestcure.com' ? 0.3 : 1
+                                                        background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer'
                                                     }}
-                                                    disabled={staff.email === 'ojas@bestcure.com'}
-                                                    title={staff.email === 'ojas@bestcure.com' ? "Cannot remove demo account" : "Remove staff"}
+                                                    title="Remove staff"
                                                 >
                                                     <Trash2 size={18} />
                                                 </button>
