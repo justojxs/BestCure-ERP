@@ -1,4 +1,5 @@
-const API_URL = '/api';
+// Use VITE_API_URL or fallback to relative route
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // helper to get auth headers from local storage
 // dynamically adds the Authorization header if a token exists
@@ -17,7 +18,7 @@ const getHeaders = () => {
 
 // generic fetch wrapper — parses error messages from the API response
 // standardizes error handling so components don't have to deal with raw fetch responses
-const request = async (url, options = {}) => {
+const request = async (url: string, options: RequestInit = {}) => {
   const res = await fetch(url, {
     ...options,
     headers: { ...getHeaders(), ...options.headers },
@@ -50,9 +51,9 @@ export const api = {
     request(`${API_URL}/auth/me`),
 
   // products
-  getProducts: (params = {}) => {
+  getProducts: (params: Record<string, any> = {}) => {
     const query = new URLSearchParams(
-      Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== ''))
+      Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== '')) as Record<string, string>
     ).toString();
     return request(`${API_URL}/products${query ? `?${query}` : ''}`);
   },
@@ -90,9 +91,9 @@ export const api = {
     });
   },
 
-  getOrders: (params = {}) => {
+  getOrders: (params: Record<string, any> = {}) => {
     const query = new URLSearchParams(
-      Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== ''))
+      Object.fromEntries(Object.entries(params).filter(([_, v]) => v !== undefined && v !== '')) as Record<string, string>
     ).toString();
     return request(`${API_URL}/orders${query ? `?${query}` : ''}`);
   },
