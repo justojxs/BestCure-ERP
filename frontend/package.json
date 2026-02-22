@@ -1,0 +1,32 @@
+{
+    "name": "bestcure-erp-frontend",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "lint": "eslint .",
+        "format": "prettier --write \"**/*.{js,jsx,ts,tsx,css}\""
+    },
+    "dependencies": {
+        "lucide-react": "^0.564.0",
+        "react": "^19.2.4",
+        "react-dom": "^19.2.4",
+        "react-router-dom": "^7.13.0",
+        "recharts": "^3.7.0"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.2",
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@types/node": "^22.19.11",
+        "@vitejs/plugin-react": "^5.0.0",
+        "eslint": "^9.39.2",
+        "globals": "^15.15.0",
+        "prettier": "^3.8.1",
+        "typescript": "~5.8.2",
+        "vite": "^6.2.0"
+    }
+}
