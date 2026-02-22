@@ -1,19 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { User, Users, Lock, Mail, ArrowRight, Sparkles } from 'lucide-react';
+import { User, Users, Lock, Mail, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import BestCureLogo from '../components/BestCureLogo';
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'admin' | 'staff' | 'customer'>('customer');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    // Clear inputs when swapping tabs to avoid confusion
+    setEmail('');
+    setPassword('');
+    setError('');
+  }, [activeTab]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,20 +36,20 @@ export default function Login() {
     setLoading(false);
   };
 
-  const fillCredentials = (role) => {
+  const fillCredentials = () => {
     const creds = {
       admin: { email: 'umesh@bestcure.com', password: 'demo1234' },
       staff: { email: 'ojas@bestcure.com', password: 'demo1234' },
       customer: { email: 'happypaws@clinic.com', password: 'demo1234' },
     };
-    setEmail(creds[role].email);
-    setPassword(creds[role].password);
+    setEmail(creds[activeTab].email);
+    setPassword(creds[activeTab].password);
   };
 
-  const demoCards = [
-    { role: 'admin', icon: () => <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg>, label: 'Admin', desc: 'Full access', color: '#059669', bg: 'rgba(5, 150, 105, 0.08)' },
-    { role: 'staff', icon: User, label: 'Staff', desc: 'Operations', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.08)' },
-    { role: 'customer', icon: Users, label: 'Clinic', desc: 'Ordering', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.08)' },
+  const tabs = [
+    { id: 'admin', label: 'Admin Login', icon: ShieldCheck, color: '#059669' },
+    { id: 'staff', label: 'Staff Login', icon: User, color: '#3b82f6' },
+    { id: 'customer', label: 'Customer Login', icon: Users, color: '#8b5cf6' }
   ];
 
   return (
@@ -78,7 +85,7 @@ export default function Login() {
       }} />
 
       <div style={{
-        maxWidth: 440, width: '100%', position: 'relative', zIndex: 1,
+        maxWidth: 480, width: '100%', position: 'relative', zIndex: 1,
         opacity: mounted ? 1 : 0,
         transform: mounted ? 'translateY(0)' : 'translateY(20px)',
         transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -92,17 +99,63 @@ export default function Login() {
           borderRadius: 'var(--radius-2xl)', overflow: 'hidden',
           boxShadow: '0 25px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
         }}>
-          {/* Header */}
+
+          {/* Main Logo Area */}
           <div style={{
-            padding: '48px 40px 36px', textAlign: 'center',
-            background: 'linear-gradient(180deg, rgba(16,185,129,0.06) 0%, transparent 100%)',
+            padding: '40px 40px 24px', textAlign: 'center',
           }}>
             <BestCureLogo variant="full" size={64} />
           </div>
 
-          {/* Form */}
-          <div style={{ padding: '8px 40px 40px' }}>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          {/* Role Tabs */}
+          <div style={{ padding: '0 40px 24px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                style={{
+                  padding: '12px 8px',
+                  background: activeTab === tab.id ? `${tab.color}20` : 'transparent',
+                  border: `1px solid ${activeTab === tab.id ? tab.color : 'rgba(255,255,255,0.1)'}`,
+                  borderRadius: '12px',
+                  color: activeTab === tab.id ? tab.color : 'rgba(255,255,255,0.6)',
+                  cursor: 'pointer',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <tab.icon size={20} />
+                <span style={{ fontSize: '12px', fontWeight: activeTab === tab.id ? 700 : 500 }}>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '0 40px' }} />
+
+          {/* Form Area */}
+          <div style={{ padding: '32px 40px 40px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: 'white', letterSpacing: '0.5px' }}>
+                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Login
+              </h2>
+              {/* Demo Hint */}
+              <div
+                onClick={fillCredentials}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '8px',
+                  marginTop: '12px', padding: '8px 16px',
+                  background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.2)',
+                  borderRadius: '20px', fontSize: '13px', color: '#94a3b8', cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
+              >
+                <CheckCircle2 size={16} /> Click here to autofill Demo {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} credentials
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {error && (
                 <div className="alert alert-error" style={{ justifyContent: 'center' }}>
                   {error}
@@ -159,7 +212,7 @@ export default function Login() {
                   background: loading
                     ? 'rgba(5,150,105,0.5)'
                     : 'linear-gradient(135deg, #059669 0%, #0d9488 100%)',
-                  marginTop: 'var(--space-1)',
+                  marginTop: '8px',
                 }}
               >
                 {loading ? (
@@ -173,47 +226,17 @@ export default function Login() {
               </button>
             </form>
 
-            {/* Divider */}
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 12,
-              margin: '28px 0 20px',
-            }}>
-              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-              <span style={{
-                fontSize: 'var(--text-xs)',
-                color: 'rgba(148,163,184,0.5)',
-                textTransform: 'uppercase',
-                letterSpacing: '1.5px', fontWeight: 500,
-                display: 'flex', alignItems: 'center', gap: 6,
-              }}>
-                <Sparkles size={12} /> Demo Access
-              </span>
-              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-            </div>
+            {activeTab === 'customer' && (
+              <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                <span style={{ color: 'rgba(148,163,184,0.7)', fontSize: '14px' }}>
+                  Don't have a customer account?{' '}
+                  <a onClick={() => navigate('/signup')} style={{ color: '#0d9488', cursor: 'pointer', fontWeight: 'bold' }}>
+                    Sign up here
+                  </a>
+                </span>
+              </div>
+            )}
 
-            {/* Demo buttons */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-              {demoCards.map((card) => (
-                <button
-                  key={card.role}
-                  id={`demo-${card.role}`}
-                  onClick={() => fillCredentials(card.role)}
-                  className="btn"
-                  style={{
-                    padding: '14px 8px',
-                    background: card.bg,
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    borderRadius: 'var(--radius-md)',
-                    flexDirection: 'column',
-                    gap: 8,
-                  }}
-                >
-                  <card.icon size={20} style={{ color: card.color }} />
-                  <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: '#e2e8f0' }}>{card.label}</span>
-                  <span style={{ fontSize: '10px', color: 'rgba(148,163,184,0.6)' }}>{card.desc}</span>
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 

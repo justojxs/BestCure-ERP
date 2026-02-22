@@ -1,6 +1,8 @@
+import { Response } from "express";
 import mongoose from "mongoose";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
+import User from "../models/User.js";
 import AppError from "../utils/AppError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import logger from "../utils/logger.js";
@@ -27,8 +29,8 @@ const generateOrderNumber = async () => {
     }).sort({ createdAt: -1 });
 
     let nextNum = 1;
-    if (lastOrder) {
-        const parts = lastOrder.orderNumber.split('/');
+    if (lastOrder && (lastOrder as any).orderNumber) {
+        const parts = (lastOrder as any).orderNumber.split('/');
         const lastNum = parseInt(parts[parts.length - 1], 10);
         if (!isNaN(lastNum)) {
             nextNum = lastNum + 1;
@@ -41,7 +43,7 @@ const generateOrderNumber = async () => {
 // POST /api/orders — customer places an order
 // uses a mongo transaction so stock deduction is atomic
 // if any part fails (e.g. invalid product, insufficient stock), everything rolls back
-const createOrder = asyncHandler(async (req, res) => {
+const createOrder = asyncHandler(async (req: any, res: Response) => {
     const { items } = req.body;
 
     if (!items || items.length === 0) {
@@ -53,11 +55,11 @@ const createOrder = asyncHandler(async (req, res) => {
     session.startTransaction();
 
     try {
-        const orderItems = [];
+        const orderItems: any[] = [];
 
         for (const item of items) {
             // pass session to queries to include them in the transaction
-            const product = await Product.findById(item.product).session(session);
+            const product: any = await Product.findById(item.product).session(session);
 
             if (!product) {
                 throw new AppError(`Product not found: ${item.product}`, 404);
@@ -87,12 +89,25 @@ const createOrder = asyncHandler(async (req, res) => {
 
         // Determine customer name based on role
         let customerName = req.user.name;
-        if ((req.user.role === 'admin' || req.user.role === 'staff') && req.body.customerName) {
-            customerName = req.body.customerName;
+        let customerId = req.user._id;
+        let customerEmail = undefined;
+
+        const isStaffOrAdmin = req.user.role === 'admin' || req.user.role === 'staff';
+
+        if (isStaffOrAdmin) {
+            if (req.body.customerName) {
+                customerName = req.body.customerName;
+            }
+            if (req.body.customerEmail) {
+                customerEmail = req.body.customerEmail;
+                const existingUser = await User.findOne({ email: customerEmail }).session(session);
+                if (existingUser) {
+                    customerId = existingUser._id;
+                }
+            }
         }
 
         // Determine initial status based on role
-        const isStaffOrAdmin = req.user.role === 'admin' || req.user.role === 'staff';
         const initialStatus = isStaffOrAdmin ? 'accepted' : 'pending';
         const acceptedBy = isStaffOrAdmin ? req.user._id : undefined;
 
@@ -101,8 +116,9 @@ const createOrder = asyncHandler(async (req, res) => {
             [
                 {
                     orderNumber,
-                    customer: req.user._id,
+                    customer: customerId,
                     customerName,
+                    customerEmail,
                     items: orderItems,
                     subtotal: Math.round(subtotal * 100) / 100,
                     tax,
@@ -144,10 +160,10 @@ const createOrder = asyncHandler(async (req, res) => {
 });
 
 // GET /api/orders — customers only see their own, admin/staff see all
-const getOrders = asyncHandler(async (req, res) => {
+const getOrders = asyncHandler(async (req: any, res: Response) => {
     const { status, page = 1, limit = 50 } = req.query;
 
-    const filter = {};
+    const filter: any = {};
 
     // security: force filter for customers
     if (req.user.role === "customer") {
@@ -183,8 +199,8 @@ const getOrders = asyncHandler(async (req, res) => {
 });
 
 // GET /api/orders/:id
-const getOrderById = asyncHandler(async (req, res) => {
-    const order = await Order.findById(req.params.id)
+const getOrderById = asyncHandler(async (req: any, res: Response) => {
+    const order: any = await Order.findById(req.params.id)
         .populate("customer", "name email")
         .populate("acceptedBy", "name");
 
@@ -195,7 +211,7 @@ const getOrderById = asyncHandler(async (req, res) => {
     // customers can only view their own orders
     if (
         req.user.role === "customer" &&
-        order.customer._id.toString() !== req.user._id.toString()
+        order.customer && order.customer._id.toString() !== req.user._id.toString()
     ) {
         throw new AppError("Not authorized to view this order", 403);
     }
@@ -205,7 +221,7 @@ const getOrderById = asyncHandler(async (req, res) => {
 
 // PUT /api/orders/:id/status — accept or reject a pending order
 // rejecting restores stock via transaction
-const updateOrderStatus = asyncHandler(async (req, res) => {
+const updateOrderStatus = asyncHandler(async (req: any, res: Response) => {
     const { status, statusNote } = req.body;
 
     if (!["accepted", "rejected"].includes(status)) {
@@ -216,7 +232,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     session.startTransaction();
 
     try {
-        const order = await Order.findById(req.params.id).session(session);
+        const order: any = await Order.findById(req.params.id).session(session);
 
         if (!order) {
             throw new AppError("Order not found", 404);

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import {
   ShoppingCart, Plus, Trash2, Printer, Search, Package,
-  Filter, ChevronRight, User, FileText, Minus, RefreshCw
+  Filter, ChevronRight, User, Mail, FileText, Minus, RefreshCw
 } from 'lucide-react';
 import InvoiceTemplate from '../components/InvoiceTemplate';
 
@@ -11,6 +11,7 @@ export default function Billing() {
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [customerName, setCustomerName] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
   const [loading, setLoading] = useState(true);
   const [invoiceNum, setInvoiceNum] = useState(''); // Empty initially
   const [isProcessing, setIsProcessing] = useState(false);
@@ -59,6 +60,7 @@ export default function Billing() {
   const resetOrder = () => {
     setCart([]);
     setCustomerName('');
+    setCustomerEmail('');
     setInvoiceNum('');
     setOrderSuccess(false);
     setSearchTerm('');
@@ -100,7 +102,8 @@ export default function Billing() {
 
       const response = await api.createOrder({
         items: orderItems,
-        customerName: customerName
+        customerName: customerName,
+        customerEmail: customerEmail.trim() || undefined
       });
 
       setInvoiceNum(response.orderNumber);
@@ -147,7 +150,7 @@ export default function Billing() {
                   type="text"
                   placeholder="Search medicines by name or batch..."
                   className="form-input"
-                  style={{ paddingLeft: '48px', height: '52px', fontSize: '16px', shadow: 'var(--shadow-sm)' }}
+                  style={{ paddingLeft: '48px', height: '52px', fontSize: '16px', boxShadow: 'var(--shadow-sm)' }}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   autoFocus
@@ -248,13 +251,32 @@ export default function Billing() {
               </div>
             </div>
 
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', marginBottom: '12px' }}>
               <User size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
               <input
                 type="text"
                 placeholder="Customer Name (Required)"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
+                className="form-input"
+                disabled={orderSuccess}
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  color: 'white',
+                  paddingLeft: '36px',
+                  outline: 'none',
+                }}
+              />
+            </div>
+
+            <div style={{ position: 'relative' }}>
+              <Mail size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.4)' }} />
+              <input
+                type="email"
+                placeholder="Customer Email (Optional)"
+                value={customerEmail}
+                onChange={(e) => setCustomerEmail(e.target.value)}
                 className="form-input"
                 disabled={orderSuccess}
                 style={{
@@ -336,6 +358,7 @@ export default function Billing() {
         <InvoiceTemplate order={{
           orderNumber: invoiceNum || 'DRAFT',
           customerName: customerName,
+          customerEmail: customerEmail,
           items: cart,
           subtotal,
           tax,

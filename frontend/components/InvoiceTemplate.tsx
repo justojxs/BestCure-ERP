@@ -8,6 +8,7 @@ export default function InvoiceTemplate({ order }) {
         invoiceNum, // fallback
         createdAt,
         customerName,
+        customerEmail,
         items,
         subtotal,
         tax,
@@ -45,10 +46,11 @@ export default function InvoiceTemplate({ order }) {
             <div style={{ marginBottom: '40px' }}>
                 <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: '#666', marginBottom: '8px', letterSpacing: '1px', fontWeight: '600' }}>Bill To:</h3>
                 <div style={{ fontSize: '16px', fontWeight: '700' }}>{customerName || 'Walk-in Customer'}</div>
-                <div style={{ fontSize: '14px', color: '#444', marginTop: '4px' }}>
-                    Customer Address Line 1<br />
-                    City, State, Zip
-                </div>
+                {customerEmail && (
+                    <div style={{ fontSize: '14px', color: '#444', marginTop: '4px' }}>
+                        {customerEmail}
+                    </div>
+                )}
             </div>
 
             {/* Items Table */}

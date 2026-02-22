@@ -3,7 +3,9 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import StaffManagement from './pages/StaffManagement';
 import Inventory from './pages/Inventory';
 import Billing from './pages/Billing';
 import CustomerPortal from './pages/CustomerPortal';
@@ -38,6 +40,7 @@ const RoleBasedRedirect = () => {
 const AppRoutes = () => (
   <Routes>
     <Route path="/login" element={<Login />} />
+    <Route path="/signup" element={<Signup />} />
 
     <Route path="/" element={<Layout />}>
       <Route index element={<RoleBasedRedirect />} />
@@ -45,6 +48,12 @@ const AppRoutes = () => (
       <Route path="dashboard" element={
         <ProtectedRoute allowedRoles={['admin']}>
           <Dashboard />
+        </ProtectedRoute>
+      } />
+
+      <Route path="staff" element={
+        <ProtectedRoute allowedRoles={['admin']}>
+          <StaffManagement />
         </ProtectedRoute>
       } />
 

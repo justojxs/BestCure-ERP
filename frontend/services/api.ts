@@ -41,6 +41,12 @@ const request = async (url: string, options: RequestInit = {}) => {
 
 export const api = {
   // auth
+  signup: (name, email, password) =>
+    request(`${API_URL}/auth/signup`, {
+      method: 'POST',
+      body: JSON.stringify({ name, email, password }),
+    }),
+
   login: (email, password) =>
     request(`${API_URL}/auth/login`, {
       method: 'POST',
@@ -108,4 +114,16 @@ export const api = {
     }),
 
   health: () => request(`${API_URL}/health`),
+
+  // staff / users
+  getStaff: () => request(`${API_URL}/users/staff`),
+  createStaff: (name, email, password) =>
+    request(`${API_URL}/users/staff`, {
+      method: 'POST',
+      body: JSON.stringify({ name, email, password }),
+    }),
+  deleteStaff: (id) =>
+    request(`${API_URL}/users/staff/${id}`, {
+      method: 'DELETE',
+    }),
 };

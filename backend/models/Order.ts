@@ -41,10 +41,13 @@ const orderSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        customerEmail: {
+            type: String,
+        },
         items: {
             type: [orderItemSchema],
             validate: {
-                validator: (v) => Array.isArray(v) && v.length > 0,
+                validator: (v: any) => Array.isArray(v) && v.length > 0,
                 message: "Order must contain at least one item",
             },
         },
@@ -86,7 +89,7 @@ const orderSchema = new mongoose.Schema(
         timestamps: true,
         toJSON: {
             transform(_, ret) {
-                delete ret.__v;
+                delete (ret as any).__v;
                 return ret;
             },
         },
