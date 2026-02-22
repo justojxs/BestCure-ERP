@@ -61,7 +61,7 @@ app.use("/api/auth/", authLimiter);
 // credentials: true is required for passing cookies/headers if we ever switch to cookie-based auth
 app.use(
   cors({
-    origin: isProduction ? false : true,
+    origin: isProduction ? (process.env.FRONTEND_URL || true) : true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -98,18 +98,10 @@ app.use("/api/products", productRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/orders", orderRoutes);
 
-// serve built frontend static files in production
-// this allows us to run the entire stack on a single port (5001)
-if (isProduction) {
-  const distPath = path.resolve(__dirname, "..", "dist");
-  app.use(express.static(distPath));
-
-  // any route not handled by the api should be passed to the react app
-  // this enables client-side routing (SPA)
-  app.get("/*path", (req, res) => {
-    res.sendFile(path.join(distPath, "index.html"));
-  });
-}
+// root endpoint
+app.get("/", (req, res) => {
+  res.json({ message: "BestCure ERP API is running perfectly!" });
+});
 
 // 404 catch-all for undefined api routes
 app.use((req, res, next) => {
@@ -135,7 +127,7 @@ const startServer = async () => {
 
     // graceful shutdown handles SIGTERM (docker stop) and SIGINT (ctrl+c)
     // we close the server first to stop accepting new requests, then close the db connection
-    const shutdown = (signal) => {
+    const shutdown = (signal: string) => {
       logger.info(`${signal} received. Shutting down gracefully...`);
       server.close(async () => {
         await mongoose.connection.close();
@@ -153,7 +145,7 @@ const startServer = async () => {
     process.on("SIGTERM", () => shutdown("SIGTERM"));
     process.on("SIGINT", () => shutdown("SIGINT"));
   } catch (error) {
-    logger.error("Failed to start server", { error: error.message });
+    logger.error("Failed to start server", { error: error instanceof Error ? error.message : String(error) });
     process.exit(1);
   }
 };
