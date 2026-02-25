@@ -36,8 +36,8 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
     toJSON: {
       transform(_, ret) {
-        delete ret.password;
-        delete ret.__v;
+        delete (ret as any).password;
+        delete (ret as any).__v;
         return ret;
       },
     },
@@ -52,7 +52,7 @@ userSchema.index({ role: 1 });
  * @param {string} enteredPassword - The plain text password to compare
  * @returns {Promise<boolean>} Whether the password matches
  */
-userSchema.methods.matchPassword = async function (enteredPassword) {
+userSchema.methods.matchPassword = async function (enteredPassword: string) {
   return bcrypt.compare(enteredPassword, this.password);
 };
 
