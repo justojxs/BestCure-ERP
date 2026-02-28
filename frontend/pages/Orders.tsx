@@ -247,7 +247,7 @@ export default function Orders() {
 
             {/* Stats Overview */}
             <div className="grid-4" style={{ marginBottom: '32px' }}>
-                <div className="stat-card">
+                <div className="stat-card" onClick={() => setFilter('all')} style={{ cursor: 'pointer', border: filter === 'all' ? '2px solid var(--color-primary)' : '1px solid var(--surface-border)', transform: filter === 'all' ? 'translateY(-2px)' : 'none', transition: 'all 0.2s ease' }}>
                     <div className="stat-card-header">
                         <div className="stat-card-icon" style={{ background: 'var(--color-info-bg)', color: 'var(--color-info)' }}>
                             <ClipboardList size={24} />
@@ -259,7 +259,7 @@ export default function Orders() {
                         <p className="stat-card-value">{stats.total}</p>
                     </div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card" onClick={() => setFilter('pending')} style={{ cursor: 'pointer', border: filter === 'pending' ? '2px solid var(--color-primary)' : '1px solid var(--surface-border)', transform: filter === 'pending' ? 'translateY(-2px)' : 'none', transition: 'all 0.2s ease' }}>
                     <div className="stat-card-header">
                         <div className="stat-card-icon" style={{ background: 'var(--color-warning-bg)', color: 'var(--color-warning)' }}>
                             <Clock size={24} />
@@ -271,7 +271,7 @@ export default function Orders() {
                         <p className="stat-card-value">{stats.pending}</p>
                     </div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card" onClick={() => setFilter('accepted')} style={{ cursor: 'pointer', border: filter === 'accepted' ? '2px solid var(--color-primary)' : '1px solid var(--surface-border)', transform: filter === 'accepted' ? 'translateY(-2px)' : 'none', transition: 'all 0.2s ease' }}>
                     <div className="stat-card-header">
                         <div className="stat-card-icon" style={{ background: 'var(--color-success-bg)', color: 'var(--color-success)' }}>
                             <CheckCircle size={24} />
@@ -282,7 +282,7 @@ export default function Orders() {
                         <p className="stat-card-value">{stats.accepted}</p>
                     </div>
                 </div>
-                <div className="stat-card">
+                <div className="stat-card" onClick={() => setFilter('rejected')} style={{ cursor: 'pointer', border: filter === 'rejected' ? '2px solid var(--color-primary)' : '1px solid var(--surface-border)', transform: filter === 'rejected' ? 'translateY(-2px)' : 'none', transition: 'all 0.2s ease' }}>
                     <div className="stat-card-header">
                         <div className="stat-card-icon" style={{ background: 'var(--color-danger-bg)', color: 'var(--color-danger)' }}>
                             <XCircle size={24} />
@@ -368,9 +368,33 @@ export default function Orders() {
                                             </span>
                                         </td>
                                         <td style={{ textAlign: 'right' }}>
-                                            <button className="btn btn-ghost btn-sm">
-                                                <Eye size={16} />
-                                            </button>
+                                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                                                {order.status === 'pending' && (
+                                                    <>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleStatusUpdate(order._id, 'accepted'); }}
+                                                            disabled={processing === order._id + 'accepted'}
+                                                            className="btn btn-success btn-sm"
+                                                            title="Accept Order"
+                                                            style={{ padding: '6px' }}
+                                                        >
+                                                            {processing === order._id + 'accepted' ? <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} /> : <CheckCircle size={16} />}
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleStatusUpdate(order._id, 'rejected'); }}
+                                                            disabled={processing === order._id + 'rejected'}
+                                                            className="btn btn-danger btn-sm"
+                                                            title="Reject Order"
+                                                            style={{ padding: '6px' }}
+                                                        >
+                                                            {processing === order._id + 'rejected' ? <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} /> : <XCircle size={16} />}
+                                                        </button>
+                                                    </>
+                                                )}
+                                                <button className="btn btn-ghost btn-sm" title="View Details">
+                                                    <Eye size={16} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
