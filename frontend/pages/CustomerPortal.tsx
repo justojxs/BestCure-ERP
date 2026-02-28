@@ -50,7 +50,7 @@ export default function CustomerPortal() {
       if (c._id !== id) return c;
       const product = products.find(p => p._id === id);
       const newQty = c.qty + delta;
-      if (newQty < 1 || newQty > (product?.stock || 9999)) return c;
+      if (newQty > (product?.stock || 9999)) return c;
       return { ...c, qty: newQty };
     }).filter(c => c.qty > 0));
   };
@@ -166,8 +166,8 @@ export default function CustomerPortal() {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           boxShadow: '0 4px 12px rgba(15,23,42,0.1)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ position: 'relative' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: 0, paddingRight: '16px' }}>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
               <ShoppingBag size={24} style={{ color: '#34d399' }} />
               <span style={{
                 position: 'absolute', top: '-8px', right: '-12px',
@@ -175,8 +175,10 @@ export default function CustomerPortal() {
                 padding: '2px 6px', borderRadius: '12px'
               }}>{cartItemCount}</span>
             </div>
-            <div>
-              <p style={{ fontWeight: 600, fontSize: '14px', marginBottom: '2px' }}>Items Added to Cart</p>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontWeight: 600, fontSize: '14px', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {cart.map(c => `${c.qty}x ${c.name}`).join(', ')}
+              </p>
               <p style={{ fontSize: '13px', color: '#94a3b8' }}>Real-time Total Value: <span style={{ color: '#fff', fontWeight: 700 }}>₹{cartGrandTotal.toFixed(2)}</span></p>
             </div>
           </div>
@@ -193,31 +195,7 @@ export default function CustomerPortal() {
         </div>
       )}
 
-      {/* Cart toggle */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button onClick={() => setShowCart(!showCart)} style={{
-          display: 'flex', alignItems: 'center', gap: '8px',
-          padding: '10px 18px', borderRadius: '12px', border: 'none',
-          background: cart.length > 0 ? '#0f172a' : '#f1f5f9',
-          color: cart.length > 0 ? '#fff' : '#64748b',
-          fontSize: '13px', fontWeight: '600', cursor: 'pointer',
-          boxShadow: cart.length > 0 ? '0 2px 8px rgba(15,23,42,0.15)' : 'none',
-          transition: 'all 0.2s ease', position: 'relative',
-        }}>
-          <ShoppingBag size={17} /> {showCart ? 'Close Order Panel' : 'Proceed to Order'}
-          {cartItemCount > 0 && !showCart && (
-            <span style={{
-              background: '#059669', color: '#fff', fontSize: '10px', fontWeight: '700',
-              width: '20px', height: '20px', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              position: 'absolute', top: '-6px', right: '-6px',
-              boxShadow: '0 2px 8px rgba(5,150,105,0.4)',
-            }}>
-              {cartItemCount}
-            </span>
-          )}
-        </button>
-      </div>
+      {/* Redundant cart toggle removed per user request */}
 
       {/* Order Panel */}
       {showCart && (
