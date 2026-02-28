@@ -5,7 +5,7 @@ import { Search, Plus, AlertTriangle, AlertCircle, Package, Edit2, Trash2, X, Sa
 const ProductModal = ({ isOpen, onClose, product, onSave }) => {
   const [formData, setFormData] = useState({
     name: '', batch: '', supplier: '', category: '',
-    stock: 0, minStock: 10, price: 0, expiry: ''
+    stock: 0, minStock: 10, price: 0, expiry: '', image: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -13,12 +13,13 @@ const ProductModal = ({ isOpen, onClose, product, onSave }) => {
     if (product) {
       setFormData({
         ...product,
+        image: product.image || '',
         expiry: product.expiry ? new Date(product.expiry).toISOString().split('T')[0] : ''
       });
     } else {
       setFormData({
         name: '', batch: '', supplier: '', category: 'Antibiotics',
-        stock: 0, minStock: 10, price: 0, expiry: ''
+        stock: 0, minStock: 10, price: 0, expiry: '', image: ''
       });
     }
   }, [product, isOpen]);
@@ -43,7 +44,7 @@ const ProductModal = ({ isOpen, onClose, product, onSave }) => {
     <div style={{
       position: 'fixed', inset: 0, zIndex: 50,
       background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(4px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', p: '20px'
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px'
     }}>
       <div style={{
         background: '#fff', width: '100%', maxWidth: '500px',
@@ -120,6 +121,23 @@ const ProductModal = ({ isOpen, onClose, product, onSave }) => {
             <input required type="date" value={formData.expiry} onChange={e => setFormData({ ...formData, expiry: e.target.value })}
               style={{ padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }} />
           </label>
+
+          {/* Image URL field — optional */}
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '13px', fontWeight: '500', color: '#475569' }}>
+            Product Image URL <span style={{ fontWeight: '400', color: '#94a3b8' }}>(optional)</span>
+            <input type="text" value={formData.image} onChange={e => setFormData({ ...formData, image: e.target.value })}
+              style={{ padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }}
+              placeholder="https://example.com/image.jpg" />
+          </label>
+          {formData.image && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '60px', height: '48px', borderRadius: '8px', overflow: 'hidden', background: '#f1f5f9', flexShrink: 0 }}>
+                <img src={formData.image} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              </div>
+              <span style={{ fontSize: '12px', color: '#64748b' }}>Image preview</span>
+            </div>
+          )}
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '10px' }}>
             <button type="button" onClick={onClose} style={{
@@ -320,7 +338,7 @@ export default function Inventory() {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ background: 'rgba(248, 250, 252, 0.5)', borderBottom: '1px solid rgba(226, 232, 240, 0.6)' }}>
-                {['Medicine / Batch', 'Category', 'Stock', 'Expiry', 'Price', 'Status', 'Actions'].map(h => (
+                {['Image', 'Medicine / Batch', 'Category', 'Stock', 'Expiry', 'Price', 'Status', 'Actions'].map(h => (
                   <th key={h} style={{
                     padding: '16px 24px', fontSize: '11px', fontWeight: '700',
                     color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px',
@@ -331,7 +349,7 @@ export default function Inventory() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="7" style={{ textAlign: 'center', padding: '60px 20px', color: '#94a3b8' }}>Loading...</td></tr>
+                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '60px 20px', color: '#94a3b8' }}>Loading...</td></tr>
               ) : filteredItems.map((item) => {
                 const isLow = item.stock < item.minStock;
                 const status = getStatusInfo(item);
@@ -339,6 +357,17 @@ export default function Inventory() {
 
                 return (
                   <tr key={item._id} style={{ borderBottom: '1px solid #f8fafc' }}>
+                    <td style={{ padding: '16px 20px', width: '60px' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden', background: '#f1f5f9', flexShrink: 0 }}>
+                        {item.image ? (
+                          <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Package size={16} style={{ color: '#cbd5e1' }} />
+                          </div>
+                        )}
+                      </div>
+                    </td>
                     <td style={{ padding: '16px 20px' }}>
                       <div style={{ fontWeight: '600', fontSize: '14px', color: '#0f172a' }}>{item.name}</div>
                       <div style={{ fontSize: '11px', color: '#94a3b8', fontFamily: "'SF Mono', monospace", marginTop: '4px' }}>
@@ -396,7 +425,7 @@ export default function Inventory() {
                 );
               })}
               {!loading && filteredItems.length === 0 && (
-                <tr><td colSpan="7" style={{ padding: '60px 20px', textAlign: 'center' }}>
+                <tr><td colSpan={7} style={{ padding: '60px 20px', textAlign: 'center' }}>
                   <Package size={40} style={{ color: '#e2e8f0', margin: '0 auto 12px', display: 'block' }} />
                   <p style={{ color: '#94a3b8', fontSize: '14px' }}>No medicines found</p>
                 </td></tr>

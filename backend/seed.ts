@@ -11,18 +11,18 @@ dotenv.config();
 // database seeder — idempotent by default (only inserts if collections are empty)
 // run with --reset to wipe and re-seed
 const SEED_PRODUCTS = [
-    { name: "Amoxycillin 500mg", batch: "B1001", supplier: "PharmaVet Inc", stock: 1500, minStock: 200, price: 15.5, expiry: new Date("2027-12-01"), category: "Antibiotics" },
-    { name: "Ivermectin Injection", batch: "B1002", supplier: "Global Meds", stock: 45, minStock: 50, price: 45.0, expiry: new Date("2027-06-15"), category: "Antiparasitic" },
-    { name: "Rabies Vaccine", batch: "V2023", supplier: "BioSafe", stock: 120, minStock: 100, price: 25.0, expiry: new Date("2026-11-20"), category: "Vaccines" },
-    { name: "Meloxicam", batch: "M554", supplier: "PharmaVet Inc", stock: 800, minStock: 100, price: 12.0, expiry: new Date("2027-01-10"), category: "Anti-inflammatory" },
-    { name: "Calcium Supplement", batch: "C990", supplier: "NutriVet", stock: 10, minStock: 30, price: 8.5, expiry: new Date("2027-08-30"), category: "Supplements" },
-    { name: "Dexamethasone Injection", batch: "D201", supplier: "Global Meds", stock: 200, minStock: 50, price: 22.0, expiry: new Date("2027-03-15"), category: "Anti-inflammatory" },
-    { name: "Oxytetracycline 300mg", batch: "O110", supplier: "PharmaVet Inc", stock: 320, minStock: 100, price: 18.0, expiry: new Date("2027-07-22"), category: "Antibiotics" },
-    { name: "Parvovirus Vaccine", batch: "V3045", supplier: "BioSafe", stock: 85, minStock: 80, price: 32.0, expiry: new Date("2026-09-10"), category: "Vaccines" },
-    { name: "Albendazole Bolus", batch: "A440", supplier: "NutriVet", stock: 600, minStock: 150, price: 6.5, expiry: new Date("2027-11-01"), category: "Antiparasitic" },
-    { name: "Vitamin B Complex", batch: "VB50", supplier: "NutriVet", stock: 950, minStock: 200, price: 10.0, expiry: new Date("2028-02-28"), category: "Supplements" },
-    { name: "Enrofloxacin 100ml", batch: "E222", supplier: "Global Meds", stock: 140, minStock: 60, price: 55.0, expiry: new Date("2027-04-18"), category: "Antibiotics" },
-    { name: "Fipronil Spray", batch: "F810", supplier: "PharmaVet Inc", stock: 70, minStock: 40, price: 28.0, expiry: new Date("2027-10-05"), category: "Antiparasitic" },
+    { name: "Amoxycillin 500mg", batch: "B1001", supplier: "PharmaVet Inc", stock: 1500, minStock: 200, price: 15.5, expiry: new Date("2027-12-01"), category: "Antibiotics", image: "/images/products/amoxicillin.png" },
+    { name: "Ivermectin Injection", batch: "B1002", supplier: "Global Meds", stock: 45, minStock: 50, price: 45.0, expiry: new Date("2027-06-15"), category: "Antiparasitic", image: "/images/products/ivermectin.png" },
+    { name: "Rabies Vaccine", batch: "V2023", supplier: "BioSafe", stock: 120, minStock: 100, price: 25.0, expiry: new Date("2026-11-20"), category: "Vaccines", image: "/images/products/rabies.png" },
+    { name: "Meloxicam", batch: "M554", supplier: "PharmaVet Inc", stock: 800, minStock: 100, price: 12.0, expiry: new Date("2027-01-10"), category: "Anti-inflammatory", image: "/images/products/meloxicam.png" },
+    { name: "Calcium Supplement", batch: "C990", supplier: "NutriVet", stock: 10, minStock: 30, price: 8.5, expiry: new Date("2027-08-30"), category: "Supplements", image: "/images/products/calcium.png" },
+    { name: "Dexamethasone Injection", batch: "D201", supplier: "Global Meds", stock: 200, minStock: 50, price: 22.0, expiry: new Date("2027-03-15"), category: "Anti-inflammatory", image: "/images/products/dexamethasone.png" },
+    { name: "Oxytetracycline 300mg", batch: "O110", supplier: "PharmaVet Inc", stock: 320, minStock: 100, price: 18.0, expiry: new Date("2027-07-22"), category: "Antibiotics", image: "/images/products/oxytetracycline.png" },
+    { name: "Parvovirus Vaccine", batch: "V3045", supplier: "BioSafe", stock: 85, minStock: 80, price: 32.0, expiry: new Date("2026-09-10"), category: "Vaccines", image: "/images/products/parvovirus.png" },
+    { name: "Albendazole Bolus", batch: "A440", supplier: "NutriVet", stock: 600, minStock: 150, price: 6.5, expiry: new Date("2027-11-01"), category: "Antiparasitic", image: "/images/products/albendazole.png" },
+    { name: "Vitamin B Complex", batch: "VB50", supplier: "NutriVet", stock: 950, minStock: 200, price: 10.0, expiry: new Date("2028-02-28"), category: "Supplements", image: "/images/products/vitaminb.png" },
+    { name: "Enrofloxacin 100ml", batch: "E222", supplier: "Global Meds", stock: 140, minStock: 60, price: 55.0, expiry: new Date("2027-04-18"), category: "Antibiotics", image: "/images/products/enrofloxacin.png" },
+    { name: "Fipronil Spray", batch: "F810", supplier: "PharmaVet Inc", stock: 70, minStock: 40, price: 28.0, expiry: new Date("2027-10-05"), category: "Antiparasitic", image: "/images/products/spray.png" },
 ];
 
 const SEED_USERS = [

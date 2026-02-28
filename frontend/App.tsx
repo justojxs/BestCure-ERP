@@ -14,6 +14,9 @@ const Inventory = React.lazy(() => import('./pages/Inventory'));
 const Billing = React.lazy(() => import('./pages/Billing'));
 const CustomerPortal = React.lazy(() => import('./pages/CustomerPortal'));
 const OrderHistory = React.lazy(() => import('./pages/OrderHistory'));
+const TrackOrders = React.lazy(() => import('./pages/TrackOrders'));
+const Favorites = React.lazy(() => import('./pages/Favorites'));
+const Account = React.lazy(() => import('./pages/Account'));
 const Orders = React.lazy(() => import('./pages/Orders'));
 
 // Full-screen loading spinner shown while lazy chunks are downloading
@@ -107,9 +110,27 @@ const AppRoutes = () => (
           </ProtectedRoute>
         } />
 
+        <Route path="track-orders" element={
+          <ProtectedRoute allowedRoles={['customer']}>
+            <TrackOrders />
+          </ProtectedRoute>
+        } />
+
         <Route path="order-history" element={
           <ProtectedRoute allowedRoles={['customer']}>
             <OrderHistory />
+          </ProtectedRoute>
+        } />
+
+        <Route path="favorites" element={
+          <ProtectedRoute allowedRoles={['customer']}>
+            <Favorites />
+          </ProtectedRoute>
+        } />
+
+        <Route path="account" element={
+          <ProtectedRoute allowedRoles={['customer']}>
+            <Account />
           </ProtectedRoute>
         } />
       </Route>

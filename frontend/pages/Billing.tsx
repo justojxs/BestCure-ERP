@@ -181,22 +181,35 @@ export default function Billing() {
 
                   return (
                     <div key={product._id} className="card product-card" style={{
-                      padding: '20px',
-                      border: inCart ? '1px solid var(--color-primary)' : '1px solid var(--surface-border)',
-                      background: inCart ? 'var(--color-primary-50)' : 'var(--surface-card)',
+                      padding: '16px',
+                      border: inCart ? '1.5px solid var(--color-primary)' : '1px solid var(--surface-border)',
+                      background: inCart ? 'rgba(5, 150, 105, 0.04)' : 'var(--surface-card)',
                       transition: 'all 0.2s ease',
                       display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
                     }}>
                       <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <h3 style={{ fontSize: '16px', fontWeight: '700', marginBottom: '4px' }}>{product.name}</h3>
-                          <span className={`badge ${stockLow ? 'badge-danger' : 'badge-success'}`}>
-                            {product.stock} left
-                          </span>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
+                          <div style={{ width: '56px', height: '56px', borderRadius: '10px', overflow: 'hidden', background: '#f1f5f9', flexShrink: 0 }}>
+                            {product.image ? (
+                              <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Package size={24} style={{ color: '#cbd5e1' }} />
+                              </div>
+                            )}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                              <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '2px', lineHeight: '1.2', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</h3>
+                              <span className={`badge ${stockLow ? 'badge-danger' : 'badge-success'}`} style={{ flexShrink: 0, marginLeft: '6px' }}>
+                                {product.stock}
+                              </span>
+                            </div>
+                            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-slate-500)' }}>
+                              Batch: {product.batch}
+                            </p>
+                          </div>
                         </div>
-                        <p style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: 'var(--color-slate-500)', marginBottom: '12px' }}>
-                          Batch: {product.batch}
-                        </p>
                       </div>
 
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>

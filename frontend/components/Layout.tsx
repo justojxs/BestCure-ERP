@@ -3,7 +3,8 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   LayoutDashboard, Package, Receipt, LogOut, Menu, X,
-  ShoppingBag, UserCircle, ClipboardList, Users, BarChart3
+  ShoppingBag, UserCircle, ClipboardList, Users, BarChart3,
+  Truck, Heart, User
 } from 'lucide-react';
 import BestCureLogo from './BestCureLogo';
 
@@ -44,6 +45,9 @@ export default function Layout() {
       '/orders': 'Orders',
       '/portal': 'Order Medicines',
       '/order-history': 'Order History',
+      '/track-orders': 'Track Orders',
+      '/favorites': 'Favorites',
+      '/account': 'My Account',
     };
     return map[location.pathname] || 'BestCure';
   };
@@ -101,7 +105,10 @@ export default function Layout() {
           {user?.role === 'customer' && (
             <>
               <NavItem to="/portal" icon={ShoppingBag} label="Order Medicines" />
+              <NavItem to="/track-orders" icon={Truck} label="Track Orders" />
               <NavItem to="/order-history" icon={ClipboardList} label="Order History" />
+              <NavItem to="/favorites" icon={Heart} label="Favorites" />
+              <NavItem to="/account" icon={User} label="My Account" />
             </>
           )}
         </nav>
