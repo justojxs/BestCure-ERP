@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { User, Users, Lock, Mail, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { User, Users, Lock, Mail, ShieldCheck, CheckCircle2, ChevronRight } from 'lucide-react';
 import BestCureLogo from '../components/BestCureLogo';
 
 export default function Login() {
@@ -16,22 +16,21 @@ export default function Login() {
 
   useEffect(() => {
     setMounted(true);
-    // Clear inputs when swapping tabs to avoid confusion
     setEmail('');
     setPassword('');
     setError('');
   }, [activeTab]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     const result = await login(email, password);
     if (result.success) {
-      const user = JSON.parse(localStorage.getItem('bestcure_user'));
+      const user = JSON.parse(localStorage.getItem('bestcure_user') || '{}');
       navigate(user.role === 'customer' ? '/portal' : '/dashboard');
     } else {
-      setError('Invalid credentials. Please try again.');
+      setError('Invalid credentials. Please verify and try again.');
     }
     setLoading(false);
   };
@@ -47,207 +46,244 @@ export default function Login() {
   };
 
   const tabs = [
-    { id: 'admin', label: 'Admin Login', icon: ShieldCheck, color: '#059669' },
-    { id: 'staff', label: 'Staff Login', icon: User, color: '#3b82f6' },
-    { id: 'customer', label: 'Customer Login', icon: Users, color: '#8b5cf6' }
+    { id: 'admin', label: 'Admin', icon: ShieldCheck, color: '#0f172a' },
+    { id: 'staff', label: 'Staff', icon: User, color: '#0f172a' },
+    { id: 'customer', label: 'Customer', icon: Users, color: '#0f172a' }
   ];
 
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center',
-      justifyContent: 'center', padding: 'var(--space-6)',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f172a 100%)',
-      position: 'relative', overflow: 'hidden',
-    }}>
-      {/* Animated background orbs */}
-      {[
-        { top: '-20%', left: '-10%', size: 600, color: '16,185,129', opacity: 0.15, dur: '8s' },
-        { bottom: '-15%', right: '-5%', size: 500, color: '14,165,233', opacity: 0.12, dur: '10s', reverse: true },
-        { top: '30%', right: '20%', size: 300, color: '139,92,246', opacity: 0.08, dur: '12s' },
-      ].map((orb, i) => (
-        <div key={i} style={{
-          position: 'absolute', ...orb,
-          width: orb.size, height: orb.size,
-          background: `radial-gradient(circle, rgba(${orb.color},${orb.opacity}) 0%, transparent 70%)`,
-          borderRadius: '50%',
-          animation: `float ${orb.dur} ease-in-out infinite ${orb.reverse ? 'reverse' : ''}`,
-          pointerEvents: 'none',
-        }} />
-      ))}
+    <>
+      <style>{`
+        .login-layout {
+          min-height: 100vh;
+          display: flex;
+          background: #ffffff;
+        }
+        .login-right-panel {
+          display: none;
+        }
+        @media (min-width: 1024px) {
+          .login-right-panel {
+            display: block;
+            flex: 1.3;
+          }
+          .login-left-panel {
+            flex: 1;
+            max-width: 550px;
+            border-right: 1px solid #e2e8f0;
+          }
+        }
+      `}</style>
 
-      {/* Grid pattern */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        backgroundImage: `
-          linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)`,
-        backgroundSize: '60px 60px',
-      }} />
-
-      <div style={{
-        maxWidth: 480, width: '100%', position: 'relative', zIndex: 1,
-        opacity: mounted ? 1 : 0,
-        transform: mounted ? 'translateY(0)' : 'translateY(20px)',
-        transition: 'all 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
-      }}>
-        {/* Card */}
-        <div style={{
-          background: 'rgba(255, 255, 255, 0.03)',
-          backdropFilter: 'blur(24px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: 'var(--radius-2xl)', overflow: 'hidden',
-          boxShadow: '0 25px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+      <div className="login-layout">
+        {/* LEFT: Login Form Side */}
+        <div className="login-left-panel" style={{
+          flex: '1', display: 'flex', flexDirection: 'column',
+          justifyContent: 'center', alignItems: 'center', padding: '40px',
+          position: 'relative'
         }}>
-
-          {/* Main Logo Area */}
           <div style={{
-            padding: '40px 40px 24px', textAlign: 'center',
+            width: '100%', maxWidth: '400px',
+            opacity: mounted ? 1 : 0,
+            transform: mounted ? 'translateY(0)' : 'translateY(10px)',
+            transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
           }}>
-            <BestCureLogo variant="full" size={64} />
-          </div>
-
-          {/* Role Tabs */}
-          <div style={{ padding: '0 40px 24px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                style={{
-                  padding: '12px 8px',
-                  background: activeTab === tab.id ? `${tab.color}20` : 'transparent',
-                  border: `1px solid ${activeTab === tab.id ? tab.color : 'rgba(255,255,255,0.1)'}`,
-                  borderRadius: '12px',
-                  color: activeTab === tab.id ? tab.color : 'rgba(255,255,255,0.6)',
-                  cursor: 'pointer',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                <tab.icon size={20} />
-                <span style={{ fontSize: '12px', fontWeight: activeTab === tab.id ? 700 : 500 }}>{tab.label}</span>
-              </button>
-            ))}
-          </div>
-
-          <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '0 40px' }} />
-
-          {/* Form Area */}
-          <div style={{ padding: '32px 40px 40px' }}>
-            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 'bold', color: 'white', letterSpacing: '0.5px' }}>
-                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Login
-              </h2>
-              {/* Demo Hint */}
-              <div
-                onClick={fillCredentials}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '8px',
-                  marginTop: '12px', padding: '8px 16px',
-                  background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.2)',
-                  borderRadius: '20px', fontSize: '13px', color: '#94a3b8', cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'; }}
-                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-              >
-                <CheckCircle2 size={16} /> Click here to autofill Demo {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} credentials
+            {/* Brand Header */}
+            <div style={{ marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <BestCureLogo variant="icon" size={42} />
+              <div>
+                <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.5px' }}>Best<span style={{ color: '#059669' }}>Cure</span></h2>
+                <p style={{ fontSize: '11px', fontWeight: '700', color: '#64748b', letterSpacing: '1px', textTransform: 'uppercase' }}>ERP System</p>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ marginBottom: '32px' }}>
+              <h1 style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginBottom: '8px', letterSpacing: '-1px' }}>
+                Secure Access
+              </h1>
+              <p style={{ fontSize: '14px', color: '#64748b' }}>
+                Select your portal and sign in to continue.
+              </p>
+            </div>
+
+            {/* Role Tabs */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '32px', background: '#f8fafc', padding: '6px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as any)}
+                  style={{
+                    flex: 1, padding: '10px',
+                    background: activeTab === tab.id ? '#fff' : 'transparent',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: activeTab === tab.id ? tab.color : '#94a3b8',
+                    fontWeight: activeTab === tab.id ? 700 : 600,
+                    fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                    boxShadow: activeTab === tab.id ? '0 2px 8px rgba(15,23,42,0.08)' : 'none',
+                    cursor: 'pointer', transition: 'all 0.2s ease',
+                  }}
+                >
+                  <tab.icon size={16} />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {error && (
-                <div className="alert alert-error" style={{ justifyContent: 'center' }}>
-                  {error}
+                <div style={{ padding: '14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', color: '#dc2626', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '500' }}>
+                  <CheckCircle2 size={16} /> {error}
                 </div>
               )}
 
-              {/* Email */}
-              <div style={{ position: 'relative' }}>
-                <Mail style={{
-                  position: 'absolute', left: 16, top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'rgba(148,163,184,0.5)',
-                }} size={18} />
-                <input
-                  id="login-email"
-                  type="email"
-                  placeholder="Email address"
-                  className="form-input form-input-dark"
-                  style={{ paddingLeft: 48 }}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                />
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#334155', marginBottom: '8px' }}>Email Address</label>
+                <div style={{ position: 'relative' }}>
+                  <Mail style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={18} />
+                  <input
+                    type="email"
+                    placeholder="name@company.com"
+                    style={{
+                      width: '100%', padding: '14px 16px 14px 46px',
+                      border: '1.5px solid #e2e8f0', borderRadius: '12px',
+                      fontSize: '15px', color: '#0f172a', background: '#fff',
+                      outline: 'none', transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
+                    }}
+                    onFocus={(e) => { e.target.style.borderColor = '#059669'; e.target.style.boxShadow = '0 0 0 3px rgba(5,150,105,0.1)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; }}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
-              {/* Password */}
-              <div style={{ position: 'relative' }}>
-                <Lock style={{
-                  position: 'absolute', left: 16, top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'rgba(148,163,184,0.5)',
-                }} size={18} />
-                <input
-                  id="login-password"
-                  type="password"
-                  placeholder="Password"
-                  className="form-input form-input-dark"
-                  style={{ paddingLeft: 48 }}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                />
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#334155', marginBottom: '8px' }}>Password</label>
+                <div style={{ position: 'relative' }}>
+                  <Lock style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={18} />
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    style={{
+                      width: '100%', padding: '14px 16px 14px 46px',
+                      border: '1.5px solid #e2e8f0', borderRadius: '12px',
+                      fontSize: '15px', color: '#0f172a', background: '#fff',
+                      outline: 'none', transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
+                    }}
+                    onFocus={(e) => { e.target.style.borderColor = '#059669'; e.target.style.boxShadow = '0 0 0 3px rgba(5,150,105,0.1)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; }}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
 
-              {/* Submit */}
               <button
-                id="btn-login"
                 type="submit"
                 disabled={loading}
-                className="btn btn-primary btn-lg"
                 style={{
-                  background: loading
-                    ? 'rgba(5,150,105,0.5)'
-                    : 'linear-gradient(135deg, #059669 0%, #0d9488 100%)',
-                  marginTop: '8px',
+                  width: '100%', padding: '14px', marginTop: '8px',
+                  background: loading ? '#cbd5e1' : '#0f172a',
+                  color: '#fff', border: 'none', borderRadius: '12px',
+                  fontSize: '15px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  boxShadow: loading ? 'none' : '0 4px 14px rgba(15,23,42,0.15)',
+                  transition: 'background 0.2s ease'
                 }}
+                onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = '#1e293b'; }}
+                onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = '#0f172a'; }}
               >
                 {loading ? (
-                  <span className="flex items-center gap-2">
-                    <div className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} />
-                    Signing in...
-                  </span>
+                  <><div className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> Authenticating...</>
                 ) : (
-                  <>Sign In <ArrowRight size={18} /></>
+                  <>Sign In <ChevronRight size={18} /></>
                 )}
               </button>
             </form>
 
+            {/* Quick Demo Credentials Autofill */}
+            <div style={{ marginTop: '32px', textAlign: 'center' }}>
+              <span
+                onClick={fillCredentials}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  padding: '6px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '20px',
+                  fontSize: '12px', fontWeight: '600', color: '#64748b', cursor: 'pointer', transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#0f172a'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#64748b'; }}
+              >
+                <CheckCircle2 size={14} /> Quick load demo {activeTab}
+              </span>
+            </div>
+
             {activeTab === 'customer' && (
-              <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                <span style={{ color: 'rgba(148,163,184,0.7)', fontSize: '14px' }}>
-                  Don't have a customer account?{' '}
-                  <a onClick={() => navigate('/signup')} style={{ color: '#0d9488', cursor: 'pointer', fontWeight: 'bold' }}>
-                    Sign up here
+              <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                <p style={{ fontSize: '13px', color: '#64748b' }}>
+                  Don't have a retail account?{' '}
+                  <a onClick={() => navigate('/signup')} style={{ color: '#059669', fontWeight: '700', cursor: 'pointer', textDecoration: 'none' }}>
+                    Register here
                   </a>
-                </span>
+                </p>
               </div>
             )}
 
           </div>
+
+          <div style={{ position: 'absolute', bottom: '24px', width: '100%', textAlign: 'center' }}>
+            <p style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '1px' }}>© 2026 BestCure Enterprise</p>
+          </div>
         </div>
 
-        {/* Footer */}
-        <p style={{
-          textAlign: 'center', marginTop: 'var(--space-6)',
-          fontSize: 'var(--text-xs)', color: 'rgba(148,163,184,0.3)',
+        {/* RIGHT: Visual Side */}
+        <div className="login-right-panel" style={{
+          position: 'relative', overflow: 'hidden', background: '#0f172a'
         }}>
-          © 2026 BestCure · Veterinary Medicine Distribution
-        </p>
+          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+            <img src="/images/login-bg.png" alt="Veterinary Clinic Enterprise" style={{ width: '100%', height: '100%', objectFit: 'cover', transform: mounted ? 'scale(1)' : 'scale(1.03)', transition: 'transform 3s ease-out', opacity: 0.9 }} />
+          </div>
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(8,145,178,0.85) 0%, rgba(15,23,42,0.95) 100%)' }} />
+
+          <div style={{
+            position: 'relative', zIndex: 1, padding: '80px', height: '100%',
+            display: 'flex', flexDirection: 'column', justifyContent: 'center'
+          }}>
+            <div style={{
+              opacity: mounted ? 1 : 0,
+              transform: mounted ? 'translateY(0)' : 'translateY(30px)',
+              transition: 'all 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s',
+            }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '20px', fontSize: '12px', fontWeight: '700', color: '#fff', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '24px' }}>
+                <ShieldCheck size={14} /> Enterprise Edition V2
+              </div>
+
+              <h1 style={{ fontSize: '56px', fontWeight: '800', lineHeight: 1.15, color: '#f8fafc', marginBottom: '24px', letterSpacing: '-1.5px' }}>
+                Welcome to BestCure ERP.<br />
+                <span style={{ color: '#34d399' }}>The Future of Veterinary.</span>
+              </h1>
+
+              <p style={{ fontSize: '20px', fontWeight: '400', lineHeight: 1.6, color: 'rgba(248,250,252,0.8)', maxWidth: '600px', marginBottom: '48px' }}>
+                Powering modern clinics and wholesale partners with intelligent, real-time inventory management and seamless stock fulfillment.
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', maxWidth: '560px' }}>
+                <div>
+                  <h4 style={{ color: '#fff', fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>Scale Confidently</h4>
+                  <p style={{ color: 'rgba(248,250,252,0.6)', fontSize: '14px', lineHeight: 1.5 }}>Handle thousands of SKUs, strict batch tracking, and intelligent multi-tier CRM with complete precision.</p>
+                </div>
+                <div>
+                  <h4 style={{ color: '#fff', fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>Real-time Insight</h4>
+                  <p style={{ color: 'rgba(248,250,252,0.6)', fontSize: '14px', lineHeight: 1.5 }}>Unify retail billing, global logistics, and staff productivity tracking into one elegantly fast platform.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
