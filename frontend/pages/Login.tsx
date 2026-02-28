@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { User, Users, Lock, Mail, ShieldCheck, CheckCircle2, ChevronRight } from 'lucide-react';
+import { User, Users, Lock, Mail, ShieldCheck, CheckCircle2, ChevronRight, Info } from 'lucide-react';
 import BestCureLogo from '../components/BestCureLogo';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -137,6 +137,11 @@ export default function Login() {
             </div>
 
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ padding: '14px', background: 'var(--surface-bg)', border: '1px solid var(--color-primary)', borderRadius: '10px', color: 'var(--color-slate-600)', fontSize: '13px', display: 'flex', alignItems: 'flex-start', gap: '10px', fontWeight: '500', lineHeight: 1.5 }}>
+                <Info size={18} style={{ color: 'var(--color-primary)', marginTop: '2px', flexShrink: 0 }} />
+                <span><strong style={{ color: 'var(--color-slate-900)' }}>Demo Tester Note:</strong> This backend is deployed on a free Render instance. It may take <strong>20-25 seconds</strong> to wake up from a cold start upon initial authentication. Please be patient!</span>
+              </div>
+
               {error && (
                 <div style={{ padding: '14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', color: '#dc2626', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '500' }}>
                   <CheckCircle2 size={16} /> {error}
