@@ -138,6 +138,22 @@ export default function Login() {
                 </div>
               )}
 
+              {/* Quick Demo Credentials Autofill */}
+              <div style={{ textAlign: 'center', marginBottom: '-8px' }}>
+                <span
+                  onClick={fillCredentials}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '6px',
+                    padding: '6px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '20px',
+                    fontSize: '12px', fontWeight: '600', color: '#64748b', cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#0f172a'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#64748b'; }}
+                >
+                  <CheckCircle2 size={14} /> Click here to autofill Demo {activeTab}
+                </span>
+              </div>
+
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#334155', marginBottom: '8px' }}>Email Address</label>
                 <div style={{ position: 'relative' }}>
@@ -205,22 +221,6 @@ export default function Login() {
               </button>
             </form>
 
-            {/* Quick Demo Credentials Autofill */}
-            <div style={{ marginTop: '32px', textAlign: 'center' }}>
-              <span
-                onClick={fillCredentials}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '6px',
-                  padding: '6px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '20px',
-                  fontSize: '12px', fontWeight: '600', color: '#64748b', cursor: 'pointer', transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#0f172a'; }}
-                onMouseOut={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#64748b'; }}
-              >
-                <CheckCircle2 size={14} /> Quick load demo {activeTab}
-              </span>
-            </div>
-
             {activeTab === 'customer' && (
               <div style={{ textAlign: 'center', marginTop: '24px' }}>
                 <p style={{ fontSize: '13px', color: '#64748b' }}>
@@ -272,12 +272,12 @@ export default function Login() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', maxWidth: '560px' }}>
                 <div>
-                  <h4 style={{ color: '#fff', fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>Scale Confidently</h4>
-                  <p style={{ color: 'rgba(248,250,252,0.6)', fontSize: '14px', lineHeight: 1.5 }}>Handle thousands of SKUs, strict batch tracking, and intelligent multi-tier CRM with complete precision.</p>
+                  <h4 style={{ color: '#fff', fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>Take Control Easily</h4>
+                  <p style={{ color: 'rgba(248,250,252,0.6)', fontSize: '14px', lineHeight: 1.5 }}>Manage thousands of medicines, track every single batch automatically, and keep your customers happy without the headache.</p>
                 </div>
                 <div>
-                  <h4 style={{ color: '#fff', fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>Real-time Insight</h4>
-                  <p style={{ color: 'rgba(248,250,252,0.6)', fontSize: '14px', lineHeight: 1.5 }}>Unify retail billing, global logistics, and staff productivity tracking into one elegantly fast platform.</p>
+                  <h4 style={{ color: '#fff', fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>Everything in One Place</h4>
+                  <p style={{ color: 'rgba(248,250,252,0.6)', fontSize: '14px', lineHeight: 1.5 }}>Bring your billing, order tracking, and staff management together into one simple, blazingly fast system.</p>
                 </div>
               </div>
             </div>
