@@ -70,7 +70,14 @@ export default function Orders() {
     if (viewingOrder) {
         return (
             <div className="animate-fadeIn">
-                <button onClick={() => setViewingOrder(null)} className="btn btn-ghost" style={{ marginBottom: '16px', paddingLeft: 0 }}>
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        setViewingOrder(null);
+                    }}
+                    className="btn btn-ghost"
+                    style={{ marginBottom: '16px', paddingLeft: 0 }}
+                >
                     <ArrowLeft size={18} /> Back to Orders
                 </button>
 
