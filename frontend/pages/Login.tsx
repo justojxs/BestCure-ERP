@@ -257,10 +257,6 @@ export default function Login() {
               transform: mounted ? 'translateY(0)' : 'translateY(30px)',
               transition: 'all 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s',
             }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '20px', fontSize: '12px', fontWeight: '700', color: '#fff', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '24px' }}>
-                <ShieldCheck size={14} /> Enterprise Edition V2
-              </div>
-
               <h1 style={{ fontSize: '56px', fontWeight: '800', lineHeight: 1.15, color: '#f8fafc', marginBottom: '24px', letterSpacing: '-1.5px' }}>
                 Welcome to BestCure ERP.<br />
                 <span style={{ color: '#34d399' }}>The Future of Veterinary.</span>
@@ -271,13 +267,13 @@ export default function Login() {
               </p>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', maxWidth: '560px' }}>
-                <div>
-                  <h4 style={{ color: '#fff', fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>Take Control Easily</h4>
-                  <p style={{ color: 'rgba(248,250,252,0.6)', fontSize: '14px', lineHeight: 1.5 }}>Manage thousands of medicines, track every single batch automatically, and keep your customers happy without the headache.</p>
+                <div style={{ paddingLeft: '16px', borderLeft: '3px solid rgba(52,211,153,0.5)' }}>
+                  <h4 style={{ color: '#fff', fontSize: '15px', fontWeight: '700', marginBottom: '4px' }}>Take Control Easily</h4>
+                  <p style={{ color: 'rgba(248,250,252,0.6)', fontSize: '14px', lineHeight: 1.4 }}>Manage medicines and track batches entirely automatically.</p>
                 </div>
-                <div>
-                  <h4 style={{ color: '#fff', fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>Everything in One Place</h4>
-                  <p style={{ color: 'rgba(248,250,252,0.6)', fontSize: '14px', lineHeight: 1.5 }}>Bring your billing, order tracking, and staff management together into one simple, blazingly fast system.</p>
+                <div style={{ paddingLeft: '16px', borderLeft: '3px solid rgba(14,165,233,0.5)' }}>
+                  <h4 style={{ color: '#fff', fontSize: '15px', fontWeight: '700', marginBottom: '4px' }}>Everything in One Place</h4>
+                  <p style={{ color: 'rgba(248,250,252,0.6)', fontSize: '14px', lineHeight: 1.4 }}>Unify your billing, tracking, and staff in one fast system.</p>
                 </div>
               </div>
             </div>
