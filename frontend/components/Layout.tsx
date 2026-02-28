@@ -90,10 +90,6 @@ export default function Layout() {
             </>
           )}
 
-          {user?.role === 'staff' && (
-            <NavItem to="/staff-analytics" icon={BarChart3} label="My Performance" />
-          )}
-
           {(user?.role === 'admin' || user?.role === 'staff') && (
             <>
               <NavItem to="/inventory" icon={Package} label="Inventory" />
@@ -102,10 +98,13 @@ export default function Layout() {
             </>
           )}
 
+          {user?.role === 'staff' && (
+            <NavItem to="/staff-analytics" icon={BarChart3} label="My Performance" />
+          )}
+
           {user?.role === 'customer' && (
             <>
               <NavItem to="/portal" icon={ShoppingBag} label="Order Medicines" />
-              <NavItem to="/track-orders" icon={Truck} label="Track Orders" />
               <NavItem to="/order-history" icon={ClipboardList} label="Order History" />
               <NavItem to="/favorites" icon={Heart} label="Favorites" />
               <NavItem to="/account" icon={User} label="My Account" />

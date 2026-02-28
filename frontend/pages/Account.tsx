@@ -181,7 +181,7 @@ export default function Account() {
                                 BestCure Veterinary Distributors
                             </p>
                             <p style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-                                123, Nehru Place, New Delhi - 110019
+                                Civil Lines, Gurugram (122001)
                             </p>
                         </div>
                     </div>

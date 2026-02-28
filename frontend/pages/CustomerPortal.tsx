@@ -66,7 +66,7 @@ export default function CustomerPortal() {
     try {
       const items = cart.map(c => ({ product: c._id, quantity: c.qty }));
       await api.createOrder(items);
-      setSuccessMsg('Order placed successfully! Track it in your Order History.');
+      setSuccessMsg('Order placed... Its status will be updated soon. Thanks for choosing BestCure.');
       setCart([]); setShowCart(false);
       await loadProducts();
       setTimeout(() => setSuccessMsg(''), 5000);
@@ -159,6 +159,40 @@ export default function CustomerPortal() {
         </div>
       </div>
 
+      {/* Top Floating Cart Summary Banner */}
+      {cart.length > 0 && !showCart && (
+        <div style={{
+          background: '#0f172a', color: 'white', padding: '16px 24px', borderRadius: '12px',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          boxShadow: '0 4px 12px rgba(15,23,42,0.1)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ position: 'relative' }}>
+              <ShoppingBag size={24} style={{ color: '#34d399' }} />
+              <span style={{
+                position: 'absolute', top: '-8px', right: '-12px',
+                background: '#059669', color: '#fff', fontSize: '11px', fontWeight: '700',
+                padding: '2px 6px', borderRadius: '12px'
+              }}>{cartItemCount}</span>
+            </div>
+            <div>
+              <p style={{ fontWeight: 600, fontSize: '14px', marginBottom: '2px' }}>Items Added to Cart</p>
+              <p style={{ fontSize: '13px', color: '#94a3b8' }}>Real-time Total Value: <span style={{ color: '#fff', fontWeight: 700 }}>₹{cartGrandTotal.toFixed(2)}</span></p>
+            </div>
+          </div>
+          <button onClick={() => setShowCart(true)} style={{
+            background: '#059669', color: 'white', border: 'none', padding: '10px 20px',
+            borderRadius: '10px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', transition: 'background 0.2s',
+            display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(5,150,105,0.3)'
+          }}
+            onMouseEnter={(e) => e.currentTarget.style.background = '#047857'}
+            onMouseLeave={(e) => e.currentTarget.style.background = '#059669'}
+          >
+            Proceed to Order <span style={{ fontSize: '16px' }}>→</span>
+          </button>
+        </div>
+      )}
+
       {/* Cart toggle */}
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <button onClick={() => setShowCart(!showCart)} style={{
@@ -170,8 +204,8 @@ export default function CustomerPortal() {
           boxShadow: cart.length > 0 ? '0 2px 8px rgba(15,23,42,0.15)' : 'none',
           transition: 'all 0.2s ease', position: 'relative',
         }}>
-          <ShoppingCart size={17} /> Cart
-          {cartItemCount > 0 && (
+          <ShoppingBag size={17} /> {showCart ? 'Close Order Panel' : 'Proceed to Order'}
+          {cartItemCount > 0 && !showCart && (
             <span style={{
               background: '#059669', color: '#fff', fontSize: '10px', fontWeight: '700',
               width: '20px', height: '20px', borderRadius: '50%',
@@ -185,7 +219,7 @@ export default function CustomerPortal() {
         </button>
       </div>
 
-      {/* Cart Panel */}
+      {/* Order Panel */}
       {showCart && (
         <div style={{ background: '#fff', borderRadius: '16px', border: '1px solid rgba(226,232,240,0.5)', overflow: 'hidden' }}>
           <div style={{
@@ -193,7 +227,7 @@ export default function CustomerPortal() {
             borderBottom: '1px solid #f1f5f9', background: '#0f172a', color: 'white',
           }}>
             <h3 style={{ fontSize: '15px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <ShoppingCart size={17} /> Your Cart
+              <ShoppingBag size={17} /> Proceed to Order
               <span style={{
                 fontSize: '11px', fontWeight: '500', color: 'rgba(148,163,184,0.7)',
                 padding: '2px 10px', background: 'rgba(255,255,255,0.06)', borderRadius: '6px',
@@ -211,7 +245,7 @@ export default function CustomerPortal() {
           </div>
           {cart.length === 0 ? (
             <div style={{ padding: '40px', textAlign: 'center' }}>
-              <ShoppingCart size={36} style={{ color: '#e2e8f0', margin: '0 auto 10px', display: 'block' }} />
+              <ShoppingBag size={36} style={{ color: '#e2e8f0', margin: '0 auto 10px', display: 'block' }} />
               <p style={{ color: '#94a3b8', fontSize: '13px' }}>Your cart is empty</p>
             </div>
           ) : (
@@ -263,34 +297,56 @@ export default function CustomerPortal() {
                   </div>
                 ))}
               </div>
-              {/* Totals */}
-              <div style={{ padding: '18px 20px', background: '#f8fafc', borderTop: '1px solid #f1f5f9' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>Subtotal</span>
-                  <span style={{ fontSize: '12px', fontWeight: '500', color: '#475569' }}>₹{cartTotal.toFixed(2)}</span>
+              {/* Totals & Payments */}
+              <div style={{ padding: '20px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', flexWrap: 'wrap', gap: '32px' }}>
+
+                {/* Payment Option */}
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', marginBottom: '12px' }}>Payment Option</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', border: '1.5px solid #059669', background: 'rgba(5,150,105,0.05)', borderRadius: '8px', cursor: 'pointer' }}>
+                      <input type="radio" name="payment" defaultChecked style={{ accentColor: '#059669', width: '16px', height: '16px' }} />
+                      <span style={{ fontSize: '13px', fontWeight: '600', color: '#0f172a' }}>Pay with Cash / UPI at the time of delivery</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', border: '1px solid #e2e8f0', background: '#f1f5f9', borderRadius: '8px', cursor: 'not-allowed', opacity: 0.6 }}>
+                      <input type="radio" name="payment" disabled />
+                      <span style={{ fontSize: '13px', fontWeight: '500', color: '#64748b' }}>Online Payment (Coming soon...)</span>
+                    </label>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>GST (18%)</span>
-                  <span style={{ fontSize: '12px', fontWeight: '500', color: '#475569' }}>₹{cartTax.toFixed(2)}</span>
+
+                {/* Subtotal Section */}
+                <div style={{ flex: 1, minWidth: '280px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '13px', color: '#64748b' }}>Subtotal</span>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>₹{cartTotal.toFixed(2)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px' }}>
+                    <span style={{ fontSize: '13px', color: '#64748b' }}>GST (18%)</span>
+                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>₹{cartTax.toFixed(2)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid #cbd5e1', marginBottom: '16px' }}>
+                    <span style={{ fontSize: '16px', fontWeight: '700', color: '#0f172a' }}>Total Amount</span>
+                    <span style={{ fontSize: '18px', fontWeight: '800', color: '#059669' }}>₹{cartGrandTotal.toFixed(2)}</span>
+                  </div>
+                  <button onClick={placeOrder} disabled={placing} style={{
+                    width: '100%', padding: '14px',
+                    background: placing ? 'rgba(5,150,105,0.5)' : '#059669',
+                    color: '#fff', border: 'none', borderRadius: '12px',
+                    fontSize: '14px', fontWeight: '700', cursor: placing ? 'not-allowed' : 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    boxShadow: placing ? 'none' : '0 4px 12px rgba(5,150,105,0.2)', transition: 'all 0.2s ease',
+                  }}
+                    onMouseEnter={(e) => { if (!placing) e.currentTarget.style.background = '#047857' }}
+                    onMouseLeave={(e) => { if (!placing) e.currentTarget.style.background = '#059669' }}
+                  >
+                    {placing ? (
+                      <><div className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> Processing...</>
+                    ) : (
+                      <><CheckCircle size={18} /> Confirm Order</>
+                    )}
+                  </button>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '10px', borderTop: '1px solid #e2e8f0' }}>
-                  <span style={{ fontSize: '15px', fontWeight: '700', color: '#0f172a' }}>Total</span>
-                  <span style={{ fontSize: '18px', fontWeight: '700', color: '#059669' }}>₹{cartGrandTotal.toFixed(2)}</span>
-                </div>
-                <button onClick={placeOrder} disabled={placing} style={{
-                  width: '100%', marginTop: '14px', padding: '12px',
-                  background: placing ? 'rgba(5,150,105,0.5)' : '#059669',
-                  color: '#fff', border: 'none', borderRadius: '12px',
-                  fontSize: '13px', fontWeight: '600', cursor: placing ? 'not-allowed' : 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                  boxShadow: '0 2px 8px rgba(5,150,105,0.2)', transition: 'all 0.2s ease',
-                }}>
-                  {placing ? (
-                    <><div className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> Placing Order...</>
-                  ) : (
-                    <><Check size={16} /> Place Order — ₹{cartGrandTotal.toFixed(2)}</>
-                  )}
-                </button>
               </div>
             </div>
           )}

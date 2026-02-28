@@ -378,6 +378,21 @@ export default function Billing() {
             <span style={{ fontSize: '24px', fontWeight: '800', color: 'var(--color-slate-900)' }}>₹{total.toFixed(2)}</span>
           </div>
 
+          {/* Payment Method Option */}
+          <div style={{ padding: '16px', background: 'rgba(5,150,105,0.05)', border: '1px solid rgba(5,150,105,0.2)', borderRadius: '12px', marginBottom: '24px' }}>
+            <h4 style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', marginBottom: '10px' }}>Payment Options</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                <input type="radio" name="billing_payment" defaultChecked style={{ accentColor: '#059669' }} />
+                <span style={{ fontSize: '13px', fontWeight: '600', color: '#0f172a' }}>Cash / UPI on Delivery</span>
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'not-allowed', opacity: 0.5 }}>
+                <input type="radio" name="billing_payment" disabled />
+                <span style={{ fontSize: '13px', fontWeight: '500', color: '#64748b' }}>Online Payment (Coming soon...)</span>
+              </label>
+            </div>
+          </div>
+
           <button
             onClick={handleProcessAndPrint}
             disabled={cart.length === 0 || isProcessing || (!invoiceNum && !customerName.trim())}

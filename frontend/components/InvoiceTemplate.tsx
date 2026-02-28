@@ -96,8 +96,11 @@ export default function InvoiceTemplate({ order }) {
 
             {/* Footer */}
             <div style={{ marginTop: '80px', paddingTop: '20px', borderTop: '1px solid #e2e8f0', fontSize: '12px', color: '#666', textAlign: 'center' }}>
+                <p style={{ fontWeight: '700', fontSize: '14px', marginBottom: '8px', color: '#0d9488' }}>
+                    Payment Method: Cash/UPI &nbsp;&nbsp;|&nbsp;&nbsp; Payment Status: Completed
+                </p>
                 <p style={{ fontWeight: '600', marginBottom: '4px' }}>Thank you for your business!</p>
-                <p>Payment Terms: Net 30. Please include invoice number on your check.</p>
+                <p>Terms: Please retain this invoice for your records.</p>
             </div>
         </div>
     );
