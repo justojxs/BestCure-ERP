@@ -7,6 +7,7 @@ import {
   Truck, Heart, User
 } from 'lucide-react';
 import BestCureLogo from './BestCureLogo';
+import ThemeToggle from './ThemeToggle';
 
 /**
  * Main application layout — sidebar navigation + header + content area.
@@ -149,6 +150,7 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <div className="header-date">{currentDate}</div>
           </div>
         </header>

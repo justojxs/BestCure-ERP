@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from '@jest/globals';
 import { connectDB, clearDB, disconnectDB } from '../helpers.js';
 import User from '../../models/User.js';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 
 describe('User Model Unit Tests', () => {
     beforeAll(async () => {

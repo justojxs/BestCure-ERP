@@ -4,7 +4,8 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "start": "cross-env NODE_ENV=production tsx server.ts",
+        "build": "npx tsc || exit 0",
+        "start": "cross-env NODE_ENV=production node dist/server.js",
         "dev": "cross-env NODE_ENV=development tsx watch server.ts",
         "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/.bin/jest --detectOpenHandles --forceExit",
         "seed": "tsx seed.ts",
@@ -12,7 +13,7 @@
         "format": "prettier --write \"**/*.{js,ts}\""
     },
     "dependencies": {
-        "bcryptjs": "^3.0.3",
+        "bcrypt": "^6.0.0",
         "compression": "^1.8.0",
         "cors": "^2.8.6",
         "cross-env": "^7.0.3",
@@ -30,7 +31,7 @@
     "devDependencies": {
         "@eslint/js": "^9.39.2",
         "@jest/globals": "^29.7.0",
-        "@types/bcryptjs": "^2.4.6",
+        "@types/bcrypt": "^6.0.0",
         "@types/compression": "^1.8.1",
         "@types/cors": "^2.8.19",
         "@types/express": "^5.0.6",

@@ -21,9 +21,13 @@ import logger from "./utils/logger.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// load .env from the project root — when running via `npm run dev --prefix backend`,
-// the cwd is backend/, so we need to look one level up for the root .env file
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
+// If running from dist/, __dirname is backend/dist. If running via tsx, it's backend/
+// So we look for the .env file either 2 levels up (from dist) or 1 level up (from backend)
+const envPath = __dirname.endsWith("dist")
+  ? path.resolve(__dirname, "../../.env")
+  : path.resolve(__dirname, "../.env");
+
+dotenv.config({ path: envPath });
 
 const app = express();
 const isProduction = process.env.NODE_ENV === "production";
@@ -121,20 +125,18 @@ const startServer = async () => {
       process.env.MONGO_URI || "mongodb://localhost:27017/bestcure_erp";
 
     // Optimize MongoDB connection for faster cold starts and lower latency
-    // - maxPoolSize: reuse connections instead of creating new ones per request
-    // - serverSelectionTimeoutMS: fail fast (5s) instead of default 30s hang
-    // - socketTimeoutMS: don't hold dead sockets forever
-    // - heartbeatFrequencyMS: detect topology changes faster
-    // - maxIdleTimeMS: close idle connections after 45s to avoid stale sockets
-    await mongoose.connect(mongoUri, {
+    mongoose.connect(mongoUri, {
       maxPoolSize: 10,
       minPoolSize: 2,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
       heartbeatFrequencyMS: 10000,
       maxIdleTimeMS: 45000,
+    }).then(() => {
+      logger.info("MongoDB connected successfully");
+    }).catch(err => {
+      logger.error("MongoDB connection error", { error: err.message });
     });
-    logger.info("MongoDB connected successfully");
 
     const PORT = process.env.PORT || 5001;
 

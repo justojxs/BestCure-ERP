@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
 
 // Lazy-loaded pages — these are only downloaded AFTER login, not during initial page load.
@@ -143,9 +144,11 @@ const AppRoutes = () => (
 export default function App() {
   return (
     <HashRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </ThemeProvider>
     </HashRouter>
   );
 }

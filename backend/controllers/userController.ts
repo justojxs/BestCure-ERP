@@ -2,7 +2,7 @@ import { Response } from "express";
 import User from "../models/User.js";
 import AppError from "../utils/AppError.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 
 // GET /api/users/staff
 export const getStaff = asyncHandler(async (req: any, res: Response) => {

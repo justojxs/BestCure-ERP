@@ -3,9 +3,9 @@ import generateToken from "../utils/generateToken.js";
 import User from "../models/User.js";
 import AppError from "../utils/AppError.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 
-// bcrypt cost factor — 8 rounds is the sweet spot for bcryptjs (pure JS):
+// bcrypt cost factor — 8 rounds is the sweet spot for bcrypt (pure JS):
 // still well above OWASP minimum (4), but ~4x faster than 10 rounds
 // on free-tier servers, 10 rounds can take 2-5s; 8 rounds keeps it under 500ms
 const BCRYPT_ROUNDS = 8;
@@ -55,7 +55,7 @@ const login = asyncHandler(async (req: any, res: Response) => {
   const { email, password } = req.body;
 
   // select('+password') overrides the schema-level select: false setting
-  const user = await User.findOne({ email }).select("+password");
+  const user = await User.findOne({ email }).select("+password").lean();
 
   if (!user) {
     throw new AppError("Invalid email or password", 401);

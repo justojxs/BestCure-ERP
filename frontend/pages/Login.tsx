@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { User, Users, Lock, Mail, ShieldCheck, CheckCircle2, ChevronRight } from 'lucide-react';
 import BestCureLogo from '../components/BestCureLogo';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function Login() {
   const { login } = useAuth();
@@ -57,7 +58,7 @@ export default function Login() {
         .login-layout {
           min-height: 100vh;
           display: flex;
-          background: #ffffff;
+          background: var(--surface-bg);
         }
         .login-right-panel {
           display: none;
@@ -70,7 +71,8 @@ export default function Login() {
           .login-left-panel {
             flex: 1;
             max-width: 550px;
-            border-right: 1px solid #e2e8f0;
+            border-right: 1px solid var(--surface-border);
+            background: var(--surface-card);
           }
         }
       `}</style>
@@ -89,25 +91,28 @@ export default function Login() {
             transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
           }}>
             {/* Brand Header */}
-            <div style={{ marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <BestCureLogo variant="icon" size={42} />
-              <div>
-                <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', letterSpacing: '-0.5px' }}>Best<span style={{ color: '#059669' }}>Cure</span></h2>
-                <p style={{ fontSize: '11px', fontWeight: '700', color: '#64748b', letterSpacing: '1px', textTransform: 'uppercase' }}>ERP System</p>
+            <div style={{ marginBottom: '40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <BestCureLogo variant="icon" size={42} />
+                <div>
+                  <h2 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--color-slate-900)', letterSpacing: '-0.5px' }}>Best<span style={{ color: 'var(--color-primary)' }}>Cure</span></h2>
+                  <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--color-slate-500)', letterSpacing: '1px', textTransform: 'uppercase' }}>ERP System</p>
+                </div>
               </div>
+              <ThemeToggle />
             </div>
 
             <div style={{ marginBottom: '32px' }}>
-              <h1 style={{ fontSize: '28px', fontWeight: '800', color: '#0f172a', marginBottom: '8px', letterSpacing: '-1px' }}>
+              <h1 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--color-slate-900)', marginBottom: '8px', letterSpacing: '-1px' }}>
                 Secure Access
               </h1>
-              <p style={{ fontSize: '14px', color: '#64748b' }}>
+              <p style={{ fontSize: '14px', color: 'var(--color-slate-500)' }}>
                 Select your portal and sign in to continue.
               </p>
             </div>
 
             {/* Role Tabs */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '32px', background: '#f8fafc', padding: '6px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '32px', background: 'var(--surface-bg)', padding: '6px', borderRadius: '12px', border: '1px solid var(--surface-border)' }}>
               {tabs.map(tab => (
                 <button
                   key={tab.id}
@@ -115,10 +120,10 @@ export default function Login() {
                   onClick={() => setActiveTab(tab.id as any)}
                   style={{
                     flex: 1, padding: '10px',
-                    background: activeTab === tab.id ? '#fff' : 'transparent',
+                    background: activeTab === tab.id ? 'var(--surface-card)' : 'transparent',
                     border: 'none',
                     borderRadius: '8px',
-                    color: activeTab === tab.id ? tab.color : '#94a3b8',
+                    color: activeTab === tab.id ? 'var(--color-slate-900)' : 'var(--color-slate-400)',
                     fontWeight: activeTab === tab.id ? 700 : 600,
                     fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
                     boxShadow: activeTab === tab.id ? '0 2px 8px rgba(15,23,42,0.08)' : 'none',
@@ -144,31 +149,31 @@ export default function Login() {
                   onClick={fillCredentials}
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: '6px',
-                    padding: '6px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '20px',
-                    fontSize: '12px', fontWeight: '600', color: '#64748b', cursor: 'pointer', transition: 'all 0.2s'
+                    padding: '6px 16px', background: 'var(--surface-bg)', border: '1px solid var(--surface-border)', borderRadius: '20px',
+                    fontSize: '12px', fontWeight: '600', color: 'var(--color-slate-500)', cursor: 'pointer', transition: 'all 0.2s'
                   }}
-                  onMouseOver={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#0f172a'; }}
-                  onMouseOut={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#64748b'; }}
+                  onMouseOver={(e) => { e.currentTarget.style.background = 'var(--color-slate-100)'; e.currentTarget.style.color = 'var(--color-slate-900)'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.background = 'var(--surface-bg)'; e.currentTarget.style.color = 'var(--color-slate-500)'; }}
                 >
                   <CheckCircle2 size={14} /> Click here to autofill Demo {activeTab}
                 </span>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#334155', marginBottom: '8px' }}>Email Address</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--color-slate-700)', marginBottom: '8px' }}>Email Address</label>
                 <div style={{ position: 'relative' }}>
-                  <Mail style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={18} />
+                  <Mail style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-slate-400)' }} size={18} />
                   <input
                     type="email"
                     placeholder="name@company.com"
                     style={{
                       width: '100%', padding: '14px 16px 14px 46px',
-                      border: '1.5px solid #e2e8f0', borderRadius: '12px',
-                      fontSize: '15px', color: '#0f172a', background: '#fff',
+                      border: '1.5px solid var(--surface-border)', borderRadius: '12px',
+                      fontSize: '15px', color: 'var(--color-slate-800)', background: 'var(--surface-card)',
                       outline: 'none', transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
                     }}
-                    onFocus={(e) => { e.target.style.borderColor = '#059669'; e.target.style.boxShadow = '0 0 0 3px rgba(5,150,105,0.1)'; }}
-                    onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; }}
+                    onFocus={(e) => { e.target.style.borderColor = 'var(--color-primary)'; e.target.style.boxShadow = '0 0 0 3px var(--color-primary-100)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = 'var(--surface-border)'; e.target.style.boxShadow = 'none'; }}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -177,20 +182,20 @@ export default function Login() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: '#334155', marginBottom: '8px' }}>Password</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', color: 'var(--color-slate-700)', marginBottom: '8px' }}>Password</label>
                 <div style={{ position: 'relative' }}>
-                  <Lock style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={18} />
+                  <Lock style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-slate-400)' }} size={18} />
                   <input
                     type="password"
                     placeholder="••••••••"
                     style={{
                       width: '100%', padding: '14px 16px 14px 46px',
-                      border: '1.5px solid #e2e8f0', borderRadius: '12px',
-                      fontSize: '15px', color: '#0f172a', background: '#fff',
+                      border: '1.5px solid var(--surface-border)', borderRadius: '12px',
+                      fontSize: '15px', color: 'var(--color-slate-800)', background: 'var(--surface-card)',
                       outline: 'none', transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
                     }}
-                    onFocus={(e) => { e.target.style.borderColor = '#059669'; e.target.style.boxShadow = '0 0 0 3px rgba(5,150,105,0.1)'; }}
-                    onBlur={(e) => { e.target.style.borderColor = '#e2e8f0'; e.target.style.boxShadow = 'none'; }}
+                    onFocus={(e) => { e.target.style.borderColor = 'var(--color-primary)'; e.target.style.boxShadow = '0 0 0 3px var(--color-primary-100)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = 'var(--surface-border)'; e.target.style.boxShadow = 'none'; }}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -203,15 +208,15 @@ export default function Login() {
                 disabled={loading}
                 style={{
                   width: '100%', padding: '14px', marginTop: '8px',
-                  background: loading ? '#cbd5e1' : '#0f172a',
-                  color: '#fff', border: 'none', borderRadius: '12px',
+                  background: loading ? 'var(--color-slate-300)' : 'var(--color-slate-900)',
+                  color: 'var(--surface-bg)', border: 'none', borderRadius: '12px',
                   fontSize: '15px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                  boxShadow: loading ? 'none' : '0 4px 14px rgba(15,23,42,0.15)',
+                  boxShadow: loading ? 'none' : '0 4px 14px rgba(0,0,0,0.15)',
                   transition: 'background 0.2s ease'
                 }}
-                onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = '#1e293b'; }}
-                onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = '#0f172a'; }}
+                onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = 'var(--color-slate-800)'; }}
+                onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = 'var(--color-slate-900)'; }}
               >
                 {loading ? (
                   <><div className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> Authenticating...</>
@@ -223,9 +228,9 @@ export default function Login() {
 
             {activeTab === 'customer' && (
               <div style={{ textAlign: 'center', marginTop: '24px' }}>
-                <p style={{ fontSize: '13px', color: '#64748b' }}>
+                <p style={{ fontSize: '13px', color: 'var(--color-slate-500)' }}>
                   Don't have a retail account?{' '}
-                  <a onClick={() => navigate('/signup')} style={{ color: '#059669', fontWeight: '700', cursor: 'pointer', textDecoration: 'none' }}>
+                  <a onClick={() => navigate('/signup')} style={{ color: 'var(--color-primary)', fontWeight: '700', cursor: 'pointer', textDecoration: 'none' }}>
                     Register here
                   </a>
                 </p>
