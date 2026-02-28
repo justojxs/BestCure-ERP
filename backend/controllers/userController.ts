@@ -24,8 +24,7 @@ export const createStaff = asyncHandler(async (req: any, res: Response) => {
         throw new AppError("User already exists", 400);
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 8);
 
     const staff = await User.create({
         name,

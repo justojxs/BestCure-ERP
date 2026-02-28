@@ -1,6 +1,16 @@
 // Use VITE_API_URL or fallback to relative route
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
+// Wake the backend on page load so it's ready by the time the user submits login.
+// On free-tier hosts (Render, Railway, etc.), the first request wakes a sleeping server.
+// Sending a lightweight health ping early hides the cold-start latency from the user.
+const warmup = () => {
+  fetch(`${API_URL}/health`, { method: 'GET', priority: 'low' as any }).catch(() => { });
+};
+
+// Fire-and-forget warmup as soon as this module is imported (i.e., on page load)
+warmup();
+
 // helper to get auth headers from local storage
 // dynamically adds the Authorization header if a token exists
 const getHeaders = () => {

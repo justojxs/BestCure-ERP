@@ -1,17 +1,35 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import Layout from './components/Layout';
 import Login from './pages/Login';
-import Signup from './pages/Signup';
-import Dashboard from './pages/Dashboard';
-import StaffManagement from './pages/StaffManagement';
-import StaffAnalytics from './pages/StaffAnalytics';
-import Inventory from './pages/Inventory';
-import Billing from './pages/Billing';
-import CustomerPortal from './pages/CustomerPortal';
-import OrderHistory from './pages/OrderHistory';
-import Orders from './pages/Orders';
+
+// Lazy-loaded pages — these are only downloaded AFTER login, not during initial page load.
+// This keeps the login page's JS bundle small and fast to parse.
+const Layout = React.lazy(() => import('./components/Layout'));
+const Signup = React.lazy(() => import('./pages/Signup'));
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const StaffManagement = React.lazy(() => import('./pages/StaffManagement'));
+const StaffAnalytics = React.lazy(() => import('./pages/StaffAnalytics'));
+const Inventory = React.lazy(() => import('./pages/Inventory'));
+const Billing = React.lazy(() => import('./pages/Billing'));
+const CustomerPortal = React.lazy(() => import('./pages/CustomerPortal'));
+const OrderHistory = React.lazy(() => import('./pages/OrderHistory'));
+const Orders = React.lazy(() => import('./pages/Orders'));
+
+// Full-screen loading spinner shown while lazy chunks are downloading
+const LazyFallback = () => (
+  <div style={{
+    minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f172a 100%)',
+  }}>
+    <div style={{
+      width: 40, height: 40, border: '3px solid rgba(255,255,255,0.1)',
+      borderTopColor: '#0d9488', borderRadius: '50%',
+      animation: 'spin 0.8s linear infinite',
+    }} />
+    <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+  </div>
+);
 
 // redirects to login if not authenticated, or to a fallback if wrong role
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -39,64 +57,66 @@ const RoleBasedRedirect = () => {
 };
 
 const AppRoutes = () => (
-  <Routes>
-    <Route path="/login" element={<Login />} />
-    <Route path="/signup" element={<Signup />} />
+  <Suspense fallback={<LazyFallback />}>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
 
-    <Route path="/" element={<Layout />}>
-      <Route index element={<RoleBasedRedirect />} />
+      <Route path="/" element={<Layout />}>
+        <Route index element={<RoleBasedRedirect />} />
 
-      <Route path="dashboard" element={
-        <ProtectedRoute allowedRoles={['admin']}>
-          <Dashboard />
-        </ProtectedRoute>
-      } />
+        <Route path="dashboard" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
 
-      <Route path="staff" element={
-        <ProtectedRoute allowedRoles={['admin']}>
-          <StaffManagement />
-        </ProtectedRoute>
-      } />
+        <Route path="staff" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <StaffManagement />
+          </ProtectedRoute>
+        } />
 
-      <Route path="inventory" element={
-        <ProtectedRoute allowedRoles={['admin', 'staff']}>
-          <Inventory />
-        </ProtectedRoute>
-      } />
+        <Route path="inventory" element={
+          <ProtectedRoute allowedRoles={['admin', 'staff']}>
+            <Inventory />
+          </ProtectedRoute>
+        } />
 
-      <Route path="orders" element={
-        <ProtectedRoute allowedRoles={['admin', 'staff']}>
-          <Orders />
-        </ProtectedRoute>
-      } />
+        <Route path="orders" element={
+          <ProtectedRoute allowedRoles={['admin', 'staff']}>
+            <Orders />
+          </ProtectedRoute>
+        } />
 
-      <Route path="staff-analytics" element={
-        <ProtectedRoute allowedRoles={['admin', 'staff']}>
-          <StaffAnalytics />
-        </ProtectedRoute>
-      } />
+        <Route path="staff-analytics" element={
+          <ProtectedRoute allowedRoles={['admin', 'staff']}>
+            <StaffAnalytics />
+          </ProtectedRoute>
+        } />
 
-      <Route path="billing" element={
-        <ProtectedRoute allowedRoles={['admin', 'staff']}>
-          <Billing />
-        </ProtectedRoute>
-      } />
+        <Route path="billing" element={
+          <ProtectedRoute allowedRoles={['admin', 'staff']}>
+            <Billing />
+          </ProtectedRoute>
+        } />
 
-      <Route path="portal" element={
-        <ProtectedRoute allowedRoles={['customer']}>
-          <CustomerPortal />
-        </ProtectedRoute>
-      } />
+        <Route path="portal" element={
+          <ProtectedRoute allowedRoles={['customer']}>
+            <CustomerPortal />
+          </ProtectedRoute>
+        } />
 
-      <Route path="order-history" element={
-        <ProtectedRoute allowedRoles={['customer']}>
-          <OrderHistory />
-        </ProtectedRoute>
-      } />
-    </Route>
+        <Route path="order-history" element={
+          <ProtectedRoute allowedRoles={['customer']}>
+            <OrderHistory />
+          </ProtectedRoute>
+        } />
+      </Route>
 
-    <Route path="*" element={<Navigate to="/" replace />} />
-  </Routes>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  </Suspense>
 );
 
 export default function App() {

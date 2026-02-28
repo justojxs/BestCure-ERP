@@ -23,5 +23,17 @@ export default defineConfig({
     build: {
         outDir: "dist",
         emptyOutDir: true,
+        // Split vendor code into separate cached chunks so the login page
+        // doesn't have to download libraries it doesn't use (e.g. recharts)
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'vendor-react': ['react', 'react-dom'],
+                    'vendor-router': ['react-router-dom'],
+                    'vendor-charts': ['recharts'],
+                    'vendor-icons': ['lucide-react'],
+                },
+            },
+        },
     },
 });

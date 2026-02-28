@@ -33,9 +33,9 @@ const SEED_USERS = [
 ];
 
 // Generate realistic demo orders
-const generateDemoOrders = (products, users) => {
-    const customers = users.filter(u => u.role === "customer");
-    const staff = users.filter(u => u.role !== "customer");
+const generateDemoOrders = (products: any[], users: any[]) => {
+    const customers = users.filter((u: any) => u.role === "customer");
+    const staff = users.filter((u: any) => u.role !== "customer");
     const statuses = ["accepted", "accepted", "accepted", "pending", "rejected"];
     const orders = [];
 
@@ -98,7 +98,7 @@ const seedDatabase = async () => {
         let users;
         const userCount = await User.countDocuments();
         if (userCount === 0) {
-            const salt = await bcrypt.genSalt(12);
+            const salt = await bcrypt.genSalt(8);
             const usersWithPasswords = await Promise.all(
                 SEED_USERS.map(async (u) => ({
                     ...u,
@@ -134,7 +134,7 @@ const seedDatabase = async () => {
         }
 
         logger.info("Seeding complete");
-    } catch (error) {
+    } catch (error: any) {
         logger.error("Seeding failed", { error: error.message });
     } finally {
         await mongoose.connection.close();

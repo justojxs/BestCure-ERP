@@ -18,10 +18,12 @@ import errorHandler from "./middleware/errorHandler.js";
 import AppError from "./utils/AppError.js";
 import logger from "./utils/logger.js";
 
-dotenv.config();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// load .env from the project root — when running via `npm run dev --prefix backend`,
+// the cwd is backend/, so we need to look one level up for the root .env file
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const app = express();
 const isProduction = process.env.NODE_ENV === "production";
@@ -118,7 +120,20 @@ const startServer = async () => {
     const mongoUri =
       process.env.MONGO_URI || "mongodb://localhost:27017/bestcure_erp";
 
-    await mongoose.connect(mongoUri);
+    // Optimize MongoDB connection for faster cold starts and lower latency
+    // - maxPoolSize: reuse connections instead of creating new ones per request
+    // - serverSelectionTimeoutMS: fail fast (5s) instead of default 30s hang
+    // - socketTimeoutMS: don't hold dead sockets forever
+    // - heartbeatFrequencyMS: detect topology changes faster
+    // - maxIdleTimeMS: close idle connections after 45s to avoid stale sockets
+    await mongoose.connect(mongoUri, {
+      maxPoolSize: 10,
+      minPoolSize: 2,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      heartbeatFrequencyMS: 10000,
+      maxIdleTimeMS: 45000,
+    });
     logger.info("MongoDB connected successfully");
 
     const PORT = process.env.PORT || 5001;
