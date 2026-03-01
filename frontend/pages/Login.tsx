@@ -8,7 +8,7 @@ import ThemeToggle from '../components/ThemeToggle';
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'admin' | 'staff' | 'customer'>('customer');
+  const [activeTab, setActiveTab] = useState<'admin' | 'staff' | 'customer'>('admin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
