@@ -139,7 +139,7 @@ export default function Login() {
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div style={{ padding: '14px', background: 'var(--surface-bg)', border: '1px solid var(--color-primary)', borderRadius: '10px', color: 'var(--color-slate-600)', fontSize: '13px', display: 'flex', alignItems: 'flex-start', gap: '10px', fontWeight: '500', lineHeight: 1.5 }}>
                 <Info size={18} style={{ color: 'var(--color-primary)', marginTop: '2px', flexShrink: 0 }} />
-                <span><strong style={{ color: 'var(--color-slate-900)' }}>Demo Tester Note:</strong> This backend is deployed on a free Render instance. It may take <strong>20-25 seconds</strong> to wake up from a cold start upon initial authentication. Please be patient!</span>
+                <span><strong style={{ color: 'var(--color-slate-900)' }}>Demo Tester Note:</strong> The backend of this website is deployed on a free Render instance. It may take <strong>20-25 seconds</strong> to wake up from a cold start upon initial authentication. Please be patient!</span>
               </div>
 
               {error && (
@@ -244,8 +244,24 @@ export default function Login() {
 
           </div>
 
-          <div style={{ position: 'absolute', bottom: '24px', width: '100%', textAlign: 'center' }}>
-            <p style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '1px' }}>© 2026 BestCure Enterprise</p>
+          <div style={{ position: 'absolute', bottom: '28px', width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--color-slate-400)', fontWeight: '500', letterSpacing: '0.3px', lineHeight: 1.6 }}>
+              Designed & Maintained with <span style={{ color: '#ef4444', fontSize: '15px' }}>❤️</span> by{' '}
+              <span style={{ fontWeight: '700', color: 'var(--color-slate-600)' }}>Ojas Gupta</span>
+            </p>
+            <a
+              href="https://www.linkedin.com/in/ojas-gupta-aa6443206/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Ojas Gupta LinkedIn Profile"
+              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-slate-400)', transition: 'all 0.25s ease' }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#0a66c2'; e.currentTarget.style.transform = 'scale(1.15)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-slate-400)'; e.currentTarget.style.transform = 'scale(1)'; }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+              </svg>
+            </a>
           </div>
         </div>
 
